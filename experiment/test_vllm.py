@@ -22,7 +22,7 @@ from datasets import Dataset, load_dataset
 from vllm import LLM, SamplingParams
 
 from experiment.semantic_cache import SemanticCache, SemanticCacheConfig
-from experiment.semantic_cache.embedding_cache import EmbeddingLayerConfig
+from experiment.semantic_cache.techniques import EmbeddingLayerConfig
 from experiment.semantic_cache.embedding_hooks import (
     EmbeddingHook,
     NullEmbeddingHook,

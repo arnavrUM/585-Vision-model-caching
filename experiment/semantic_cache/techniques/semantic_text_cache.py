@@ -23,13 +23,13 @@ except ImportError as exc:  # pragma: no cover - optional dependency
 
 
 @dataclass
-class SemanticMatch:
+class SemanticTextMatch:
     chunk_id: str
     score: float
 
 
-class SemanticIndex:
-    """Thin FAISS wrapper that stores chunk-level embeddings."""
+class SemanticTextCache:
+    """FAISS-backed semantic text index used for chunk-level reuse."""
 
     def __init__(
         self,
@@ -51,7 +51,7 @@ class SemanticIndex:
         self.index.add(vec)
         self.ids.append(chunk_id)
 
-    def search(self, text: str, k: int = 1) -> SemanticMatch | None:
+    def search(self, text: str, k: int = 1) -> SemanticTextMatch | None:
         if len(self.ids) == 0:
             return None
         vec = self._encode(text)
@@ -60,4 +60,4 @@ class SemanticIndex:
         best_idx = int(indices[0][0])
         if best_idx < 0 or best_idx >= len(self.ids):
             return None
-        return SemanticMatch(chunk_id=self.ids[best_idx], score=best_score)
+        return SemanticTextMatch(chunk_id=self.ids[best_idx], score=best_score)
