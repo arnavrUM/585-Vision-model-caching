@@ -8,18 +8,30 @@ import torch
 from .kv_protocols import KVChunk
 
 
-def _resolve_model_runner(llm: Any):
+def _resolve_engine_components(llm: Any):
     engine = getattr(llm, "llm_engine", None)
     if engine is None:
         raise RuntimeError("LLM.llm_engine is not initialized yet.")
+    scheduler = getattr(engine, "scheduler", None)
+    engine_core_client = getattr(engine, "engine_core", None)
+    if scheduler is None and engine_core_client is not None:
+        scheduler = getattr(getattr(engine_core_client, "engine_core", None), "scheduler", None)
+    if scheduler is None:
+        raise RuntimeError("Failed to resolve Scheduler from vLLM engine.")
     executor = getattr(engine, "model_executor", None)
+    if executor is None and engine_core_client is not None:
+        executor = getattr(getattr(engine_core_client, "engine_core", None), "model_executor", None)
     if executor is None:
-        raise RuntimeError("Engine is missing model_executor.")
+        raise RuntimeError("Engine is missing model_executor (multiprocessing disabled?).")
     driver_worker = getattr(executor, "driver_worker", executor)
     runner = getattr(driver_worker, "model_runner", None)
     if runner is None:
+        worker = getattr(driver_worker, "worker", None)
+        if worker is not None:
+            runner = getattr(worker, "model_runner", None)
+    if runner is None:
         raise RuntimeError("Failed to resolve GPUModelRunner from vLLM engine.")
-    return engine, runner
+    return engine, scheduler, runner
 
 
 @dataclass
@@ -29,7 +41,7 @@ class VLLMEngineAdapter:
     llm: Any
 
     def __post_init__(self) -> None:
-        self.engine, self.runner = _resolve_model_runner(self.llm)
+        self.engine, self.scheduler, self.runner = _resolve_engine_components(self.llm)
 
     # ------------------------------------------------------------------ utils
     def _layer_kv_map(self) -> dict[str, torch.Tensor]:
@@ -69,7 +81,7 @@ class VLLMEngineAdapter:
         *,
         num_blocks: int | None = None,
     ) -> KVChunk | None:
-        kv_manager = getattr(self.engine.scheduler, "kv_cache_manager", None)
+        kv_manager = getattr(self.scheduler, "kv_cache_manager", None)
         if kv_manager is None:
             raise RuntimeError("Scheduler has no kv_cache_manager (kv cache disabled?).")
         blocks = kv_manager.get_blocks(request_id)
@@ -86,7 +98,7 @@ class VLLMEngineAdapter:
             layer_name: self._select_blocks(tensor, block_ids)
             for layer_name, tensor in self._layer_kv_map().items()
         }
-        block_size = getattr(self.engine.scheduler, "block_size", None)
+        block_size = getattr(self.scheduler, "block_size", None)
         num_tokens = len(block_ids) * block_size if block_size else len(block_ids)
         return KVChunk(
             chunk_id=chunk_id,
@@ -96,7 +108,7 @@ class VLLMEngineAdapter:
         )
 
     def inject(self, request_id: str, chunk: KVChunk) -> bool:
-        kv_manager = getattr(self.engine.scheduler, "kv_cache_manager", None)
+        kv_manager = getattr(self.scheduler, "kv_cache_manager", None)
         if kv_manager is None:
             raise RuntimeError("Scheduler has no kv_cache_manager.")
         blocks = kv_manager.get_blocks(request_id)

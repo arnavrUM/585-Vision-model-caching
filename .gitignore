@@ -1,1 +1,21 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
 env/
+.env/
+.venv/
+
+# Experiment artifacts
+kv_chunks/
+.cache/
+.mypy_cache/
+.pytest_cache/
+
+# vLLM / dataset downloads
+*.pt
+*.bin
+*.safetensors
+*.jsonl
