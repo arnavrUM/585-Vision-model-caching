@@ -16,7 +16,7 @@ def chunk_prompt(prompt: str, window: int) -> str:
     return prompt[:window]
 
 
-def drain_request(engine, request_id: str) -> str:
+def drain_request(engine, request_id: str, on_finish=None) -> str:
     """Drive the engine loop until the request finishes."""
     response = ""
     while engine.has_unfinished_requests():
@@ -27,6 +27,8 @@ def drain_request(engine, request_id: str) -> str:
             if output.outputs:
                 response = output.outputs[-1].text
             if output.finished:
+                if on_finish:
+                    on_finish()
                 return response
     return response
 
@@ -44,21 +46,22 @@ def run_prompts(
     for prompt in prompts:
         chunk_text = chunk_prompt(prompt, chunk_window)
         request_id = uuid.uuid4().hex
-        hit = cache.try_reuse(request_id, chunk_text)
+        reuse = cache.try_reuse(request_id, chunk_text)
+        hit = reuse.hit
 
         start = time.perf_counter()
         engine.add_request(request_id, prompt, sampling_params)
+        if hit is None:
+            cache.add_observation(request_id, chunk_text)
         text = drain_request(engine, request_id)
         latency = time.perf_counter() - start
         stats.append((prompt, hit, latency))
 
-        if hit is None:
-            cache.add_observation(request_id, chunk_text)
-
         print(
             f"Prompt: {prompt[:30]!r}... | "
             f"{'cache hit' if hit else 'cache miss'} | "
-            f"latency={latency:.3f}s\n{text}\n"
+            f"latency={latency:.3f}s | "
+            f"techniques={reuse.statuses}\n{text}\n"
         )
     return stats
 

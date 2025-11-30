@@ -19,3 +19,7 @@ kv_chunks/
 *.bin
 *.safetensors
 *.jsonl
+
+# Experiment data
+experiment_logs/
+dataset_cache/

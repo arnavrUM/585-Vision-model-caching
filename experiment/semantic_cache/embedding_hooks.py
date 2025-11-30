@@ -33,7 +33,12 @@ class NullEmbeddingHook:
 class PromptEmbeddingHook:
     """Encodes the textual prompt via sentence-transformers."""
 
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
+    def __init__(
+        self,
+        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        *,
+        device: str = "cpu",
+    ) -> None:
         if SentenceTransformer is None:
             raise RuntimeError(
                 "sentence-transformers is required for PromptEmbeddingHook. "

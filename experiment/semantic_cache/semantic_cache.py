@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from .kv_adapter import VLLMEngineAdapter
@@ -31,6 +31,7 @@ class SemanticCacheConfig:
     enable_fusion_cache: bool = False
     fusion_cache_dir: str = "fusion_chunks"
     embedding_layers: list[EmbeddingLayerConfig] = field(default_factory=list)
+    dry_run: bool = False
 
 
 @dataclass
@@ -38,6 +39,12 @@ class CacheHit:
     chunk_id: str
     score: float
     source: str = "text"
+
+
+@dataclass
+class ReuseReport:
+    hit: CacheHit | None
+    statuses: dict[str, str]
 
 
 class SemanticCache:
@@ -84,10 +91,16 @@ class SemanticCache:
         request_id: str,
         match: SemanticTextMatch | EmbeddingMatch,
     ) -> bool:
+        if self.config.dry_run:
+            return True
         stored = self.store.load(match.chunk_id)
         if stored is None:
             return False
-        injected = self.adapter.inject(request_id, stored)
+        try:
+            injected = self.adapter.inject(request_id, stored)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[warn] semantic cache inject failed for {match.chunk_id}: {exc}")
+            return False
         if not injected:
             return False
         self._inject_fusion_state(request_id, match.chunk_id)
@@ -107,30 +120,68 @@ class SemanticCache:
         request_id: str,
         chunk_text: str,
         embeddings: dict[str, np.ndarray] | None = None,
-    ) -> CacheHit | None:
+    ) -> ReuseReport:
+        statuses: dict[str, str] = {"kv_cache": "miss"}
         normalized = self.exact_cache.normalize(chunk_text)
+        if normalized:
+            statuses["exact_text"] = "miss"
+        else:
+            statuses["exact_text"] = "skip"
+
+        statuses["semantic_text"] = "miss"
+        if self.embedding_cache:
+            for layer_name in self.embedding_cache.layers:
+                statuses[f"embedding:{layer_name}"] = "skip"
+
         if normalized:
             exact_hit = self._exact_text_match(request_id, normalized)
             if exact_hit:
-                return exact_hit
-        if self.embedding_cache and embeddings:
-            embed_match = self.embedding_cache.search(embeddings)
-            if embed_match is not None:
-                injected = self._maybe_inject(request_id, embed_match)
-                if injected:
-                    return CacheHit(
-                        chunk_id=embed_match.chunk_id,
-                        score=embed_match.score,
-                        source=f"embedding:{embed_match.layer}",
-                    )
+                statuses["exact_text"] = "hit"
+                statuses["semantic_text"] = "skip"
+                for key in list(statuses):
+                    if key.startswith("embedding:"):
+                        statuses[key] = "skip"
+                statuses["kv_cache"] = "hit"
+                return ReuseReport(hit=exact_hit, statuses=dict(statuses))
+            statuses["exact_text"] = "miss"
+
+        if self.embedding_cache:
+            if embeddings:
+                for layer_name in embeddings:
+                    key = f"embedding:{layer_name}"
+                    if key in statuses:
+                        statuses[key] = "miss"
+                embed_match = self.embedding_cache.search(embeddings)
+                if embed_match is not None:
+                    key = f"embedding:{embed_match.layer}"
+                    statuses[key] = "hit"
+                    injected = self._maybe_inject(request_id, embed_match)
+                    if injected:
+                        statuses["semantic_text"] = "skip"
+                        statuses["kv_cache"] = "hit"
+                        hit = CacheHit(
+                            chunk_id=embed_match.chunk_id,
+                            score=embed_match.score,
+                            source=f"embedding:{embed_match.layer}",
+                        )
+                        return ReuseReport(hit=hit, statuses=dict(statuses))
+                    statuses[key] = "miss"
+            else:
+                for layer_name in self.embedding_cache.layers:
+                    statuses[f"embedding:{layer_name}"] = "skip"
 
         match = self.semantic_text_cache.search(chunk_text)
         if match is None or match.score < self.config.similarity_threshold:
-            return None
+            statuses["semantic_text"] = "miss"
+            return ReuseReport(hit=None, statuses=dict(statuses))
         injected = self._maybe_inject(request_id, match)
         if not injected:
-            return None
-        return CacheHit(chunk_id=match.chunk_id, score=match.score, source="text")
+            statuses["semantic_text"] = "miss"
+            return ReuseReport(hit=None, statuses=dict(statuses))
+        statuses["semantic_text"] = "hit"
+        statuses["kv_cache"] = "hit"
+        hit = CacheHit(chunk_id=match.chunk_id, score=match.score, source="text")
+        return ReuseReport(hit=hit, statuses=dict(statuses))
 
     def _exact_text_match(self, request_id: str, normalized: str) -> CacheHit | None:
         chunk_ids = self.exact_cache.candidates(normalized)
@@ -139,7 +190,13 @@ class SemanticCache:
             if stored is None:
                 self.exact_cache.remove(normalized, chunk_id)
                 continue
-            injected = self.adapter.inject(request_id, stored)
+            if self.config.dry_run:
+                return CacheHit(chunk_id=chunk_id, score=1.0, source="text:exact")
+            try:
+                injected = self.adapter.inject(request_id, stored)
+            except Exception as exc:  # pragma: no cover - defensive
+                print(f"[warn] semantic cache inject failed for {chunk_id}: {exc}")
+                continue
             if injected:
                 return CacheHit(chunk_id=chunk_id, score=1.0, source="text:exact")
         return None
@@ -151,16 +208,36 @@ class SemanticCache:
         chunk_id: str | None = None,
         embeddings: dict[str, np.ndarray] | None = None,
     ) -> KVChunk | None:
-        chunk = self.adapter.capture(
-            request_id=request_id,
-            chunk_id=chunk_id or uuid.uuid4().hex,
-            num_blocks=self.config.max_cached_blocks,
-        )
-        if chunk is None:
-            return None
-        self._record_chunk(chunk_text, chunk)
-        self._capture_fusion_state(request_id, chunk.chunk_id)
-        if self.embedding_cache and embeddings:
-            self.embedding_cache.add(chunk.chunk_id, embeddings)
-            chunk.metadata.setdefault("embeddings", list(embeddings))
-        return chunk
+        if self.config.dry_run:
+            stub = KVChunk(
+                chunk_id=chunk_id or uuid.uuid4().hex,
+                block_ids=[],
+                tensors={},
+                num_tokens=0,
+            )
+            self._record_chunk(chunk_text, stub)
+            if self.embedding_cache and embeddings:
+                self.embedding_cache.add(stub.chunk_id, embeddings)
+                stub.metadata.setdefault("embeddings", list(embeddings))
+            return stub
+
+        def _capture_and_store() -> None:
+            try:
+                chunk = self.adapter.capture(
+                    request_id=request_id,
+                    chunk_id=chunk_id or uuid.uuid4().hex,
+                    num_blocks=self.config.max_cached_blocks,
+                )
+            except Exception as exc:  # pragma: no cover - defensive
+                print(f"[warn] semantic cache capture failed for {request_id}: {exc}")
+                return
+            if chunk is None:
+                return
+            self._record_chunk(chunk_text, chunk)
+            self._capture_fusion_state(request_id, chunk.chunk_id)
+            if self.embedding_cache and embeddings:
+                self.embedding_cache.add(chunk.chunk_id, embeddings)
+                chunk.metadata.setdefault("embeddings", list(embeddings))
+
+        self.adapter.register_on_free(request_id, _capture_and_store)
+        return None

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import torch
 
@@ -42,8 +42,30 @@ class VLLMEngineAdapter:
 
     def __post_init__(self) -> None:
         self.engine, self.scheduler, self.runner = _resolve_engine_components(self.llm)
+        self._pending_callbacks: dict[str, list[Callable[[], None]]] = {}
+        if not hasattr(self.scheduler, "_semantic_cache_wrapped"):
+            original_free = self.scheduler._free_request
+
+            def wrapped_free(request):
+                callbacks = self._pending_callbacks.pop(request.request_id, [])
+                for callback in callbacks:
+                    try:
+                        callback()
+                    except Exception as exc:  # pragma: no cover - defensive
+                        print(f"[warn] semantic-cache callback failed: {exc}")
+                return original_free(request)
+
+            self.scheduler._free_request = wrapped_free  # type: ignore[attr-defined]
+            self.scheduler._semantic_cache_wrapped = True  # type: ignore[attr-defined]
+        else:
+            original_free = getattr(self.scheduler, "_free_request")
+        self._original_free_request = original_free
 
     # ------------------------------------------------------------------ utils
+    def register_on_free(self, request_id: str, callback: Callable[[], None]) -> None:
+        callbacks = self._pending_callbacks.setdefault(request_id, [])
+        callbacks.append(callback)
+
     def _layer_kv_map(self) -> dict[str, torch.Tensor]:
         forward_context = getattr(
             getattr(self.runner, "compilation_config", None), "static_forward_context", {}
@@ -113,7 +135,7 @@ class VLLMEngineAdapter:
             raise RuntimeError("Scheduler has no kv_cache_manager.")
         blocks = kv_manager.get_blocks(request_id)
         block_groups = blocks.get_block_ids(allow_none=True)
-        if block_groups is None:
+        if not block_groups:
             return False
         dst_block_ids = list(block_groups[0])
         if len(dst_block_ids) < len(chunk.block_ids):
