@@ -1,10 +1,11 @@
 # Hierarchical Semantic Cache Experiment
 
-This project builds a multi-level caching stack on top of vLLM to reduce redundant compute for the GQA benchmark (or any prompt set that exhibits overlap). vLLM already performs token-level prefix caching; we now add three higher-level layers:
+This project builds a multi-level caching stack on top of vLLM to reduce redundant compute for the GQA benchmark (or any prompt set that exhibits overlap). vLLM already performs token-level prefix caching; we now add four higher-level layers:
 
 1. **Exact normalized text cache** – stores a cheap hash of the normalized chunk text so identical questions/prompts can be served instantly without touching FAISS.
 2. **Textual chunk similarity** – reuse KV pages when the first `chunk_window` characters line up semantically (via sentence-transformers + FAISS).
-3. **Latent embedding similarity** – reuse when deeper embeddings (e.g., pooled vision encoder features, prompt embeddings) match above a configurable threshold.
+3. **Multimodal fusion cache** – optional layer that captures tensors emitted by fusion modules (e.g., image-text projectors) and re-injects them when the same sample recurs.
+4. **Latent embedding similarity** – reuse when deeper embeddings (e.g., pooled vision encoder features, prompt embeddings) match above a configurable threshold.
 
 Each level is optional and can be extended independently, giving you a hierarchical cache that escalates from cheap heuristics to richer embeddings.
 
@@ -23,7 +24,7 @@ uv pip install -r requirements.txt              # pulls vllm, sentence-transform
 
 - `experiment/test_vllm.py` – CLI orchestrating dataset prep, cache configuration, and logging.
 - `experiment/semantic_cache/` – modular cache layers:
-  - `techniques/` – houses individual cache techniques (`exact_text_cache.py`, `semantic_text_cache.py`, `embedding_cache.py`).
+  - `techniques/` – houses individual cache techniques (`exact_text_cache.py`, `semantic_text_cache.py`, `fusion_cache.py`, `embedding_cache.py`).
   - `kv_adapter.py` – bridges vLLM’s scheduler to capture/inject KV blocks.
   - `embedding_hooks.py` – pluggable hooks that extract model-specific embeddings (prompt text, vision encoder latents, etc.).
   - `kv_store.py` / `kv_protocols.py` – serialization helpers for cached blocks.
@@ -50,6 +51,46 @@ python experiment/test_vllm.py \
   --embedding-hook prompt
 ```
 
+## Batch Sweeps & Logging
+
+Use `experiment/run_experiments.py` to schedule many runs (different models/datasets/hyperparameters) and log the outcome to CSV/JSON automatically. Create a JSON spec that declares defaults plus a list of experiments:
+
+```json
+{
+  "defaults": {
+    "dataset_config": "val_balanced_instructions",
+    "split": "val",
+    "max_samples": 128,
+    "chunk_source": "semantic"
+  },
+  "experiments": [
+    {
+      "name": "opt125m-semantic",
+      "model": "facebook/opt-125m",
+      "similarity_threshold": 0.8
+    },
+    {
+      "name": "qwen-prompts",
+      "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "embedding_layers": ["prompt:384:0.8"],
+      "embedding_hook": "prompt",
+      "max_samples": 64
+    }
+  ]
+}
+```
+
+Then run:
+
+```bash
+python experiment/run_experiments.py \
+  --specs experiments.json \
+  --log-file sweep_logs.csv \
+  --samples-dir sweep_samples
+```
+
+Each experiment is executed sequentially, the aggregated metrics are appended to `sweep_logs.csv`, and (optionally) per-sample JSONL files land in `sweep_samples/`. Use `--resume` to skip experiment names that already appear in the log.
+
 ### Key Flags
 
 - `--model` – HuggingFace/vLLM identifier.
@@ -73,7 +114,10 @@ so you can tell whether a reuse came from textual chunks or an embedding layer.
 1. **L0 (vLLM prefix cache)** – handled internally by vLLM (token-level).
 2. **L0.5 (exact chunk cache)** – normalized text lookups stored in `text_index.json` hit instantly when the incoming chunk matches a previous one verbatim/modulo whitespace + casing.
 3. **L1 (text chunk cache)** – `SemanticTextCache` searches normalized text / semantic programs.
-4. **L2 (latent embedding cache)** – `EmbeddingCache` queries FAISS per registered layer. Hooks (e.g., prompt encoder, vision encoder tap) produce the embeddings on demand.
+4. **L1.5 (fusion cache)** – `FusionCache` captures multimodal fusion tensors (if your provider exposes them) and replays them before decoding.
+5. **L2 (latent embedding cache)** – `EmbeddingCache` queries FAISS per registered layer. Hooks (e.g., prompt encoder, vision encoder tap) produce the embeddings on demand.
+
+To enable the fusion layer, provide a `FusionProvider` implementation that knows how to read fusion tensors from your model (for capture) and how to write them back (for injection), then set `SemanticCacheConfig.enable_fusion_cache=True`. Captured states are persisted under `fusion_cache_dir`, mirroring how KV chunks live inside `kv_chunks/`.
 
 The driver first tries L2 matches (highest cost but highest precision), falls back to L1, and only then pays the full generation cost. On misses, KV blocks (and any embeddings) are committed for future reuse.
 

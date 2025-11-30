@@ -11,7 +11,7 @@ class ExactTextCache:
     def __init__(self, cache_dir: str | Path, index_filename: str = "text_index.json") -> None:
         self.cache_dir = Path(cache_dir)
         self.index_path = self.cache_dir / index_filename
-        self._space_re = re.compile(r"\s+")
+        self._space_re = re.compile(r"\s+")``
         self._index = self._load()
 
     # ------------------------------------------------------------------ utils

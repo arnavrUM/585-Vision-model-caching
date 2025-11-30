@@ -13,6 +13,9 @@ from .techniques import (
     EmbeddingLayerConfig,
     EmbeddingMatch,
     ExactTextCache,
+    FusionCache,
+    FusionProvider,
+    NullFusionProvider,
     SemanticTextCache,
     SemanticTextMatch,
 )
@@ -25,6 +28,8 @@ class SemanticCacheConfig:
     index_encoder: str = "sentence-transformers/all-MiniLM-L6-v2"
     cache_dir: str = "kv_chunks"
     text_cache_index: str = "text_index.json"
+    enable_fusion_cache: bool = False
+    fusion_cache_dir: str = "fusion_chunks"
     embedding_layers: list[EmbeddingLayerConfig] = field(default_factory=list)
 
 
@@ -45,7 +50,10 @@ class SemanticCache:
         config: SemanticCacheConfig | None = None,
         index: SemanticTextCache | None = None,
         store: KVStore | None = None,
+        fusion_cache: FusionCache | None = None,
+        fusion_provider: FusionProvider | None = None,
     ) -> None:
+        self.llm = llm
         self.config = config or SemanticCacheConfig()
         self.adapter = VLLMEngineAdapter(llm)
         self.semantic_text_cache = index or SemanticTextCache(
@@ -56,12 +64,20 @@ class SemanticCache:
         self.embedding_cache: EmbeddingCache | None = (
             EmbeddingCache(self.config.embedding_layers) if self.config.embedding_layers else None
         )
+        self.fusion_cache = fusion_cache
+        if self.fusion_cache is None and self.config.enable_fusion_cache:
+            provider = fusion_provider or NullFusionProvider()
+            self.fusion_cache = FusionCache(provider, root=self.config.fusion_cache_dir)
 
     def _record_chunk(self, chunk_text: str, chunk: KVChunk) -> None:
         chunk.metadata.setdefault("text", chunk_text)
         self.semantic_text_cache.add(chunk.chunk_id, chunk_text)
         self.store.save(chunk)
         self.exact_cache.record(chunk_text, chunk.chunk_id)
+    def _capture_fusion_state(self, request_id: str, chunk_id: str) -> None:
+        if not self.fusion_cache:
+            return
+        self.fusion_cache.capture(llm=self.llm, request_id=request_id, chunk_id=chunk_id)
 
     def _maybe_inject(
         self,
@@ -71,7 +87,19 @@ class SemanticCache:
         stored = self.store.load(match.chunk_id)
         if stored is None:
             return False
-        return self.adapter.inject(request_id, stored)
+        injected = self.adapter.inject(request_id, stored)
+        if not injected:
+            return False
+        self._inject_fusion_state(request_id, match.chunk_id)
+        return True
+
+    def _inject_fusion_state(self, request_id: str, chunk_id: str) -> None:
+        if not self.fusion_cache:
+            return
+        state = self.fusion_cache.load(chunk_id)
+        if state is None:
+            return
+        self.fusion_cache.inject(llm=self.llm, request_id=request_id, state=state)
 
     # ------------------------------------------------------------------ public
     def try_reuse(
@@ -131,6 +159,7 @@ class SemanticCache:
         if chunk is None:
             return None
         self._record_chunk(chunk_text, chunk)
+        self._capture_fusion_state(request_id, chunk.chunk_id)
         if self.embedding_cache and embeddings:
             self.embedding_cache.add(chunk.chunk_id, embeddings)
             chunk.metadata.setdefault("embeddings", list(embeddings))

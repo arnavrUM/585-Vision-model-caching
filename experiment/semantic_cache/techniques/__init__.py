@@ -2,6 +2,7 @@
 
 from .embedding_cache import EmbeddingCache, EmbeddingLayerConfig, EmbeddingMatch
 from .exact_text_cache import ExactTextCache
+from .fusion_cache import FusionCache, FusionProvider, FusionState, NullFusionProvider
 from .semantic_text_cache import SemanticTextCache, SemanticTextMatch
 
 __all__ = [
@@ -9,6 +10,10 @@ __all__ = [
     "EmbeddingLayerConfig",
     "EmbeddingMatch",
     "ExactTextCache",
+    "FusionCache",
+    "FusionProvider",
+    "FusionState",
+    "NullFusionProvider",
     "SemanticTextCache",
     "SemanticTextMatch",
 ]
