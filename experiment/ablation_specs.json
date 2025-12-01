@@ -1,0 +1,358 @@
+{
+  "defaults": {
+    "dataset_config": "val_balanced_instructions",
+    "split": "val",
+    "max_samples": 256,
+    "chunk_source": "semantic",
+    "cache_dir": "kv_chunks_ablation",
+    "fusion_cache_dir": "fusion_chunks_ablation",
+    "tensor_parallel_size": 1,
+    "shuffle_seed": 42
+  },
+  "experiments": [
+    {
+      "name": "qwen-exact-only",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": false,
+      "similarity_threshold": 0.8,
+      "notes": "Exact-text cache only"
+    },
+    {
+      "name": "qwen-fusion-only",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": false,
+      "enable_fusion_cache": true,
+      "similarity_threshold": 0.8,
+      "notes": "Fusion cache enabled (requires provider)."
+    },
+    {
+      "name": "qwen-semantic-0.5",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.5,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "qwen-semantic-0.6",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.6,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "qwen-semantic-0.7",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.7,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "qwen-semantic-0.8",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.8,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "qwen-semantic-0.9",
+      "preset": "qwen3-vl-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.9,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.7-v0.7",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.7-v0.8",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.7-v0.9",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.8-v0.7",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.8-v0.8",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.8-v0.9",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.9-v0.7",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.9-v0.8",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "qwen-embed-p0.9-v0.9",
+      "preset": "qwen3-vl-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-exact-only",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": false,
+      "similarity_threshold": 0.8,
+      "notes": "Exact-text cache only"
+    },
+    {
+      "name": "internvl-fusion-only",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": false,
+      "enable_fusion_cache": true,
+      "similarity_threshold": 0.8,
+      "notes": "Fusion cache enabled (requires provider)."
+    },
+    {
+      "name": "internvl-semantic-0.5",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.5,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "internvl-semantic-0.6",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.6,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "internvl-semantic-0.7",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.7,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "internvl-semantic-0.8",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.8,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "internvl-semantic-0.9",
+      "preset": "internvl3.5-2b",
+      "embedding_layers": [],
+      "embedding_hook": "none",
+      "enable_semantic_text_cache": true,
+      "similarity_threshold": 0.9,
+      "notes": "Semantic text cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.7-v0.7",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.7-v0.8",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.7-v0.9",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.7",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.8-v0.7",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.8-v0.8",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.8-v0.9",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.8",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.9-v0.7",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.7"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.9-v0.8",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.8"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    },
+    {
+      "name": "internvl-embed-p0.9-v0.9",
+      "preset": "internvl3.5-2b",
+      "similarity_threshold": 0.8,
+      "enable_semantic_text_cache": false,
+      "embedding_layers": [
+        "prompt:384:0.9",
+        "vision:512:0.9"
+      ],
+      "embedding_hook": "prompt_vision",
+      "notes": "Embedding cache threshold sweep"
+    }
+  ]
+}

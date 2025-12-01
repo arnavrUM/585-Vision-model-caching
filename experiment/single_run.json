@@ -1,0 +1,13 @@
+{
+  "defaults": { "max_samples": 1024, "chunk_source": "semantic" },
+  "experiments": [
+    {
+      "name": "internvl-embed-p0.9-v0.9",
+      "preset": "internvl3.5-2b",
+      "enable_semantic_text_cache": false,
+      "embedding_layers": ["prompt:384:0.9","vision:512:0.9"],
+      "embedding_hook": "prompt_vision",
+      "similarity_threshold": 0.8
+    }
+  ]
+}

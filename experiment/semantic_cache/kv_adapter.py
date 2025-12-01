@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -8,7 +9,7 @@ import torch
 from .kv_protocols import KVChunk
 
 
-def _resolve_engine_components(llm: Any):
+def _try_resolve_engine_components(llm: Any):
     engine = getattr(llm, "llm_engine", None)
     if engine is None:
         raise RuntimeError("LLM.llm_engine is not initialized yet.")
@@ -34,6 +35,18 @@ def _resolve_engine_components(llm: Any):
     return engine, scheduler, runner
 
 
+def _resolve_engine_components(llm: Any, retries: int = 10, delay: float = 1.0):
+    last_error: Exception | None = None
+    for _ in range(max(1, retries)):
+        try:
+            return _try_resolve_engine_components(llm)
+        except RuntimeError as exc:  # pragma: no cover - timing dependent
+            last_error = exc
+            time.sleep(delay)
+    assert last_error is not None
+    raise last_error
+
+
 @dataclass
 class VLLMEngineAdapter:
     """Allows reading and writing KV pages for custom experiments."""
@@ -43,6 +56,7 @@ class VLLMEngineAdapter:
     def __post_init__(self) -> None:
         self.engine, self.scheduler, self.runner = _resolve_engine_components(self.llm)
         self._pending_callbacks: dict[str, list[Callable[[], None]]] = {}
+        self._wrapped_free_request: Callable[[Any], Any] | None = None
         if not hasattr(self.scheduler, "_semantic_cache_wrapped"):
             original_free = self.scheduler._free_request
 
@@ -57,6 +71,7 @@ class VLLMEngineAdapter:
 
             self.scheduler._free_request = wrapped_free  # type: ignore[attr-defined]
             self.scheduler._semantic_cache_wrapped = True  # type: ignore[attr-defined]
+            self._wrapped_free_request = wrapped_free
         else:
             original_free = getattr(self.scheduler, "_free_request")
         self._original_free_request = original_free
@@ -148,3 +163,19 @@ class VLLMEngineAdapter:
                 continue
             self._scatter_blocks(tensor, chunk.block_ids, cached)
         return True
+
+    def close(self) -> None:
+        scheduler = getattr(self, "scheduler", None)
+        if scheduler is not None and self._wrapped_free_request is not None:
+            current_free = getattr(scheduler, "_free_request", None)
+            if current_free is self._wrapped_free_request:
+                scheduler._free_request = self._original_free_request  # type: ignore[attr-defined]
+                if hasattr(scheduler, "_semantic_cache_wrapped"):
+                    delattr(scheduler, "_semantic_cache_wrapped")
+        self._pending_callbacks.clear()
+        self.llm = None
+        self.engine = None
+        self.scheduler = None
+        self.runner = None
+        self._wrapped_free_request = None
+        self._original_free_request = None

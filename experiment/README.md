@@ -48,8 +48,36 @@ python experiment/test_vllm.py \
   --max-samples 128 \
   --chunk-source group \
   --embedding-layer prompt:384:0.8 \
-  --embedding-hook prompt
+  --embedding-layer vision:512:0.82 \
+  --embedding-hook prompt_vision
 ```
+
+### Model Presets (InternVL3.5-2B included)
+
+Some model families require a consistent bundle of settings (model id, `trust_remote_code`, embedding layers, etc.). Use `--preset` to hydrate those recommended values and then override whichever flags you care about:
+
+```bash
+python experiment/test_vllm.py \
+  --preset internvl3.5-2b \
+  --dataset gqa \
+  --max-samples 64 \
+  --cache-mode dry-run
+```
+
+The `internvl3.5-2b` preset loads `OpenGVLab/InternVL3_5-2B-Instruct`, enables `trust_remote_code`, and registers prompt + vision-id embeddings (`--embedding-layer prompt:384:0.8` and `vision:512:0.82`) via the `prompt_vision` hook. You can still add or override any flag explicitly on the CLI. The original `qwen3-vl-2b` configuration is also available via `--preset qwen3-vl-2b`.
+
+> **Vision image roots**: the `vision` embedding layer now reads the *actual image file* (through a CLIP sentence-transformer). Point the hook at your image directory via one of `SEMANTIC_CACHE_IMAGE_ROOT`, `GQA_IMAGE_ROOT`, or `LLAVA_IMAGE_ROOT` (e.g., `export GQA_IMAGE_ROOT=/data/gqa/images`). The hook looks for `<image_id>.jpg/.png` under those roots and falls back gracefully if the file is missing.
+
+### Ablation sweep helper
+
+Need to benchmark each cache layer in isolation? `experiment/ablation_specs.json` enumerates all 32 combinations requested (2 models × {[exact only], [fusion only], semantic thresholds {0.5…0.9}, embedding threshold grid 3×3}). Launch the full sweep with:
+
+```bash
+./run_ablation.sh
+```
+
+The helper script just invokes `experiment/run_experiments.py` with that spec, logging results under `experiment_logs/ablation_results.csv` and dumping per-sample traces into `experiment_logs/ablation_samples/`. Edit the JSON if you want to tweak thresholds, sample counts, or add/remove experiments before re-running the script.
+By default the script passes `--purge-cache-between-runs`, so each experiment wipes its `cache_dir`/`fusion_cache_dir` before executing, preventing cross-run reuse.
 
 ## Batch Sweeps & Logging
 
@@ -72,9 +100,15 @@ Use `experiment/run_experiments.py` to schedule many runs (different models/data
     {
       "name": "qwen-prompts",
       "model": "Qwen/Qwen2.5-VL-7B-Instruct",
-      "embedding_layers": ["prompt:384:0.8"],
-      "embedding_hook": "prompt",
+      "embedding_layers": ["prompt:384:0.8", "vision:512:0.85"],
+      "embedding_hook": "prompt_vision",
       "max_samples": 64
+    },
+    {
+      "name": "internvl35-2b",
+      "preset": "internvl3.5-2b",
+      "max_samples": 64,
+      "notes": "InternVL3.5-2B with prompt-semantic cache."
     }
   ]
 }
@@ -91,14 +125,18 @@ python experiment/run_experiments.py \
 
 Each experiment is executed sequentially, the aggregated metrics are appended to `sweep_logs.csv`, and (optionally) per-sample JSONL files land in `sweep_samples/`. Use `--resume` to skip experiment names that already appear in the log.
 
+Just like the CLI, a spec entry can set `"preset": "internvl3.5-2b"` (or any other preset) to adopt the recommended defaults before applying per-experiment overrides.
+
 ### Key Flags
 
+- `--preset` – load a prebundled configuration. Currently available: `qwen3-vl-2b`, `internvl3.5-2b`.
 - `--model` – HuggingFace/vLLM identifier.
 - `--dataset-config`, `--split`, `--max-samples`, `--shuffle-seed` – control the GQA subset.
 - `--chunk-source` – textual key (`question`, `semantic`, `group`, `combined`, etc.).
 - `--similarity-threshold` – minimum cosine similarity for the textual FAISS index.
 - `--embedding-layer NAME:DIM[:THRESH]` – registers one or more latent layers (e.g., `vision:1024:0.9`). You can add multiple `--embedding-layer` flags.
-- `--embedding-hook` – selects the hook that retrieves embeddings (`none`, `prompt`, or dotted path `package.module:Factory`).
+- `--embedding-hook` – selects the hook that retrieves embeddings (`none`, `prompt`, `vision`, `prompt_vision`, or dotted path `package.module:Factory`).
+- `--disable-semantic-cache` – completely bypass the semantic text cache (useful for ablations).
 - `--max-cached-blocks`, `--cache-dir`, `--index-encoder` – storage and encoder tweaks.
 
 Logs include hit provenance:

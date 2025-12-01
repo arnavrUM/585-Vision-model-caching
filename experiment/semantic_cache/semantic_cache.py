@@ -32,6 +32,7 @@ class SemanticCacheConfig:
     fusion_cache_dir: str = "fusion_chunks"
     embedding_layers: list[EmbeddingLayerConfig] = field(default_factory=list)
     dry_run: bool = False
+    enable_semantic_text_cache: bool = True
 
 
 @dataclass
@@ -63,9 +64,12 @@ class SemanticCache:
         self.llm = llm
         self.config = config or SemanticCacheConfig()
         self.adapter = VLLMEngineAdapter(llm)
-        self.semantic_text_cache = index or SemanticTextCache(
-            encoder_name=self.config.index_encoder
-        )
+        if self.config.enable_semantic_text_cache:
+            self.semantic_text_cache = index or SemanticTextCache(
+                encoder_name=self.config.index_encoder
+            )
+        else:
+            self.semantic_text_cache = None
         self.store = store or KVStore(self.config.cache_dir)
         self.exact_cache = ExactTextCache(self.config.cache_dir, self.config.text_cache_index)
         self.embedding_cache: EmbeddingCache | None = (
@@ -75,10 +79,12 @@ class SemanticCache:
         if self.fusion_cache is None and self.config.enable_fusion_cache:
             provider = fusion_provider or NullFusionProvider()
             self.fusion_cache = FusionCache(provider, root=self.config.fusion_cache_dir)
+        self._closed = False
 
     def _record_chunk(self, chunk_text: str, chunk: KVChunk) -> None:
         chunk.metadata.setdefault("text", chunk_text)
-        self.semantic_text_cache.add(chunk.chunk_id, chunk_text)
+        if self.semantic_text_cache:
+            self.semantic_text_cache.add(chunk.chunk_id, chunk_text)
         self.store.save(chunk)
         self.exact_cache.record(chunk_text, chunk.chunk_id)
     def _capture_fusion_state(self, request_id: str, chunk_id: str) -> None:
@@ -128,7 +134,10 @@ class SemanticCache:
         else:
             statuses["exact_text"] = "skip"
 
-        statuses["semantic_text"] = "miss"
+        if self.semantic_text_cache:
+            statuses["semantic_text"] = "miss"
+        else:
+            statuses["semantic_text"] = "skip"
         if self.embedding_cache:
             for layer_name in self.embedding_cache.layers:
                 statuses[f"embedding:{layer_name}"] = "skip"
@@ -170,6 +179,8 @@ class SemanticCache:
                 for layer_name in self.embedding_cache.layers:
                     statuses[f"embedding:{layer_name}"] = "skip"
 
+        if not self.semantic_text_cache:
+            return ReuseReport(hit=None, statuses=dict(statuses))
         match = self.semantic_text_cache.search(chunk_text)
         if match is None or match.score < self.config.similarity_threshold:
             statuses["semantic_text"] = "miss"
@@ -241,3 +252,15 @@ class SemanticCache:
 
         self.adapter.register_on_free(request_id, _capture_and_store)
         return None
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            if self.adapter:
+                self.adapter.close()
+        except Exception:
+            pass
+        self.adapter = None
+        self.llm = None

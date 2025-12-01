@@ -45,6 +45,7 @@ from vllm.v1.metrics.reader import (
     Vector as MetricVector,
 )
 
+from experiment.model_presets import BASE_PROMPT_TEMPLATE, apply_preset_to_args, list_model_presets
 from experiment.semantic_cache import SemanticCache, SemanticCacheConfig
 from experiment.semantic_cache.techniques import EmbeddingLayerConfig
 from experiment.semantic_cache.embedding_hooks import (
@@ -640,18 +641,24 @@ def summarize_vllm_metrics(llm: LLM) -> None:
         print(f"- {metric.name} {label_str}: {value}")
 
 
-def parse_args() -> argparse.Namespace:
-    default_template = (
-        "You are assisting with the GQA benchmark. "
-        "Answer the question based on the referenced image.\n"
-        "Image ID: {image_id}\n"
-        "Question: {question}\n"
-        "Answer:"
-    )
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    default_template = BASE_PROMPT_TEMPLATE
     parser = argparse.ArgumentParser(
         description="Benchmark semantic KV caching on structured VQA datasets using vLLM."
     )
+    parser.add_argument(
+        "--preset",
+        choices=list_model_presets(),
+        default=None,
+        help="Optional preset that pre-populates recommended arguments for a model family.",
+    )
     parser.add_argument("--model", default="Qwen/Qwen3-VL-2B-Instruct", help="Model path or name for vLLM.")
+    parser.add_argument(
+        "--tensor-parallel-size",
+        type=int,
+        default=1,
+        help="How many GPUs to use for tensor parallelism.",
+    )
     parser.add_argument(
         "--dataset",
         choices=["gqa", "llava150k", "synthetic"],
@@ -768,7 +775,15 @@ def parse_args() -> argparse.Namespace:
         help="Use 'dry-run' to avoid touching KV tensors (safe default); "
         "set to 'live' to capture/inject real blocks (experimental).",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--disable-semantic-cache",
+        action="store_true",
+        help="Completely bypass the semantic text cache layer.",
+    )
+    defaults = parser.parse_args(args=[])
+    args = parser.parse_args(args=argv)
+    apply_preset_to_args(args, defaults)
+    return args
 
 
 def main() -> None:
@@ -795,6 +810,7 @@ def main() -> None:
             model=args.model,
             trust_remote_code=args.trust_remote_code,
             disable_log_stats=args.disable_log_stats,
+            tensor_parallel_size=args.tensor_parallel_size,
         )
     except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
         _raise_model_load_help(args.model, exc)
@@ -806,6 +822,7 @@ def main() -> None:
         index_encoder=args.index_encoder,
         embedding_layers=layer_configs,
         dry_run=(args.cache_mode != "live"),
+        enable_semantic_text_cache=not args.disable_semantic_cache,
     )
     cache = SemanticCache(llm, config=cache_config)
     sampling_params = SamplingParams(temperature=args.temperature, max_tokens=args.max_tokens)
