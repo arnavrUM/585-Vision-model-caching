@@ -1,1 +1,28 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
 env/
+.env/
+.venv/
+
+# Experiment artifacts
+experiment2/kv_chunks/
+experiment2/kv_chunks_ablation/
+experiment2/fusion_chunks/
+experiment2/fusion_chunks_ablation/
+.cache/
+.mypy_cache/
+.pytest_cache/
+
+# vLLM / dataset downloads
+*.pt
+*.bin
+*.safetensors
+*.jsonl
+
+# Experiment data
+experiment2/experiment_logs/
+experiment2/dataset_cache/
