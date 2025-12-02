@@ -22,8 +22,8 @@ uv pip install -r requirements.txt              # pulls vllm, sentence-transform
 
 ## Repository Layout
 
-- `experiment/test_vllm.py` – CLI orchestrating dataset prep, cache configuration, and logging.
-- `experiment/semantic_cache/` – modular cache layers:
+- `experiment2/test_vllm.py` – CLI orchestrating dataset prep, cache configuration, and logging.
+- `experiment2/semantic_cache/` – modular cache layers:
   - `techniques/` – houses individual cache techniques (`exact_text_cache.py`, `semantic_text_cache.py`, `fusion_cache.py`, `embedding_cache.py`).
   - `kv_adapter.py` – bridges vLLM’s scheduler to capture/inject KV blocks.
   - `embedding_hooks.py` – pluggable hooks that extract model-specific embeddings (prompt text, vision encoder latents, etc.).
@@ -34,7 +34,7 @@ uv pip install -r requirements.txt              # pulls vllm, sentence-transform
 A minimal run (textual chunk cache only):
 
 ```bash
-python experiment/test_vllm.py \
+python experiment2/test_vllm.py \
   --model facebook/opt-125m \
   --max-samples 64 \
   --chunk-source semantic
@@ -43,7 +43,7 @@ python experiment/test_vllm.py \
 Enable latent-level reuse by stacking `--embedding-layer` and a corresponding `--embedding-hook`:
 
 ```bash
-python experiment/test_vllm.py \
+python experiment2/test_vllm.py \
   --model Qwen/Qwen2.5-VL-7B-Instruct \
   --max-samples 128 \
   --chunk-source group \
@@ -57,7 +57,7 @@ python experiment/test_vllm.py \
 Some model families require a consistent bundle of settings (model id, `trust_remote_code`, embedding layers, etc.). Use `--preset` to hydrate those recommended values and then override whichever flags you care about:
 
 ```bash
-python experiment/test_vllm.py \
+python experiment2/test_vllm.py \
   --preset internvl3.5-2b \
   --dataset gqa \
   --max-samples 64 \
@@ -70,18 +70,20 @@ The `internvl3.5-2b` preset loads `OpenGVLab/InternVL3_5-2B-Instruct`, enables `
 
 ### Ablation sweep helper
 
-Need to benchmark each cache layer in isolation? `experiment/ablation_specs.json` enumerates all 32 combinations requested (2 models × {[exact only], [fusion only], semantic thresholds {0.5…0.9}, embedding threshold grid 3×3}). Launch the full sweep with:
+Need to benchmark each cache layer in isolation? `experiment2/ablation_specs.json` enumerates all 32 combinations requested (2 models × {[exact only], [fusion only], semantic thresholds {0.5…0.9}, embedding threshold grid 3×3}). Launch the full sweep with:
 
 ```bash
 ./run_ablation.sh
 ```
 
-The helper script just invokes `experiment/run_experiments.py` with that spec, logging results under `experiment_logs/ablation_results.csv` and dumping per-sample traces into `experiment_logs/ablation_samples/`. Edit the JSON if you want to tweak thresholds, sample counts, or add/remove experiments before re-running the script.
+The helper script just invokes `experiment2/run_experiments.py` with that spec, logging results under `experiment2/experiment_logs/ablation_results.csv` and dumping per-sample traces into `experiment2/experiment_logs/ablation_samples/`. Edit the JSON if you want to tweak thresholds, sample counts, or add/remove experiments before re-running the script.
 By default the script passes `--purge-cache-between-runs`, so each experiment wipes its `cache_dir`/`fusion_cache_dir` before executing, preventing cross-run reuse.
+
+Need the exact commands for manual single-run debugging? Append `--emit-commands` and the helper will print one ready-to-run `python experiment2/test_vllm.py ...` line per experiment (respecting your `--cache-mode` choice) and exit without launching anything. Each emitted command now includes `--experiment-name` and `--summary-log <log.csv>` so the standalone run still appends a summary row to the same CSV that `run_experiments.py` would populate. If you also pass `--samples-dir`, the generated command will add `--samples-jsonl <dir>/<experiment>.jsonl` to keep the per-sample traces in sync.
 
 ## Batch Sweeps & Logging
 
-Use `experiment/run_experiments.py` to schedule many runs (different models/datasets/hyperparameters) and log the outcome to CSV/JSON automatically. Create a JSON spec that declares defaults plus a list of experiments:
+Use `experiment2/run_experiments.py` to schedule many runs (different models/datasets/hyperparameters) and log the outcome to CSV/JSON automatically. Create a JSON spec that declares defaults plus a list of experiments:
 
 ```json
 {
@@ -117,7 +119,7 @@ Use `experiment/run_experiments.py` to schedule many runs (different models/data
 Then run:
 
 ```bash
-python experiment/run_experiments.py \
+python experiment2/run_experiments.py \
   --specs experiments.json \
   --log-file sweep_logs.csv \
   --samples-dir sweep_samples
@@ -137,6 +139,7 @@ Just like the CLI, a spec entry can set `"preset": "internvl3.5-2b"` (or any oth
 - `--embedding-layer NAME:DIM[:THRESH]` – registers one or more latent layers (e.g., `vision:1024:0.9`). You can add multiple `--embedding-layer` flags.
 - `--embedding-hook` – selects the hook that retrieves embeddings (`none`, `prompt`, `vision`, `prompt_vision`, or dotted path `package.module:Factory`).
 - `--disable-semantic-cache` – completely bypass the semantic text cache (useful for ablations).
+- `--disable-exact-cache` – turn off the normalized exact-text cache (e.g., for fusion-only runs).
 - `--max-cached-blocks`, `--cache-dir`, `--index-encoder` – storage and encoder tweaks.
 
 Logs include hit provenance:

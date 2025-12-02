@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from experiment.model_presets import BASE_PROMPT_TEMPLATE, apply_preset_mapping
+from experiment2.model_presets import BASE_PROMPT_TEMPLATE, apply_preset_mapping
 
 DEFAULT_PROMPT_TEMPLATE = BASE_PROMPT_TEMPLATE
 
@@ -24,8 +24,9 @@ class ExperimentSpec:
     embedding_layers: list[str] = field(default_factory=list)
     embedding_hook: str = "none"
     max_cached_blocks: int | None = None
-    cache_dir: str = "kv_chunks"
+    cache_dir: str = "experiment2/kv_chunks"
     index_encoder: str = "sentence-transformers/all-MiniLM-L6-v2"
+    index_encoder_device: str = "cuda"
     temperature: float = 0.0
     max_tokens: int = 64
     trust_remote_code: bool = False
@@ -33,8 +34,9 @@ class ExperimentSpec:
     tensor_parallel_size: int = 1
     gpu_memory_utilization: float = 0.9
     enable_fusion_cache: bool = False
-    fusion_cache_dir: str = "fusion_chunks"
+    fusion_cache_dir: str = "experiment2/fusion_chunks"
     enable_semantic_text_cache: bool = True
+    enable_exact_text_cache: bool = True
     preset: str | None = None
 
     @classmethod
@@ -76,6 +78,7 @@ class ExperimentSpec:
             "max_cached_blocks": self.max_cached_blocks if self.max_cached_blocks is not None else "",
             "cache_dir": self.cache_dir,
             "index_encoder": self.index_encoder,
+            "index_encoder_device": self.index_encoder_device,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "trust_remote_code": self.trust_remote_code,
@@ -85,6 +88,7 @@ class ExperimentSpec:
             "enable_fusion_cache": self.enable_fusion_cache,
             "fusion_cache_dir": self.fusion_cache_dir,
             "enable_semantic_text_cache": self.enable_semantic_text_cache,
+            "enable_exact_text_cache": self.enable_exact_text_cache,
             "preset": self.preset or "",
         }
 
@@ -103,4 +107,3 @@ def load_spec_file(path: str | Path) -> list[ExperimentSpec]:
             raise ValueError("Each experiment spec must be a JSON object.")
         specs.append(ExperimentSpec.from_dict(entry, defaults))
     return specs
-    gpu_memory_utilization: float = 0.85

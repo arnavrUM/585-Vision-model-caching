@@ -10,31 +10,77 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Sequence, TYPE_CHECKING
 
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from vllm import LLM, SamplingParams
+from experiment2.command_builder import build_test_vllm_command
+from experiment2.specs import ExperimentSpec, load_spec_file
 
-from experiment.semantic_cache import SemanticCache, SemanticCacheConfig
-from experiment.semantic_cache.embedding_hooks import (
-    EmbeddingHook,
-    NullEmbeddingHook,
-    load_embedding_hook,
-)
-from experiment.test_vllm import (
-    PromptResult,
-    build_prompts,
-    load_gqa_dataset,
-    parse_embedding_layer_spec,
-    run_samples,
-)
-from experiment.specs import ExperimentSpec, load_spec_file
+if TYPE_CHECKING:  # pragma: no cover - import-time type checking only
+    from vllm import LLM, SamplingParams
+
+    from experiment2.semantic_cache import SemanticCache, SemanticCacheConfig
+    from experiment2.semantic_cache.embedding_hooks import EmbeddingHook
+    from experiment2.test_vllm import PromptResult
+else:  # placeholders populated at runtime
+    LLM = None  # type: ignore[assignment]
+    SamplingParams = None  # type: ignore[assignment]
+    SemanticCache = None  # type: ignore[assignment]
+    SemanticCacheConfig = None  # type: ignore[assignment]
+    EmbeddingHook = None  # type: ignore[assignment]
+    NullEmbeddingHook = None  # type: ignore[assignment]
+    load_embedding_hook = None
+    PromptResult = None  # type: ignore[assignment]
+    build_prompts = None
+    load_gqa_dataset = None
+    parse_embedding_layer_spec = None
+    run_samples = None
 
 os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
 
 
+_RUNTIME_IMPORTED = False
+
+
+def _import_runtime() -> None:
+    global _RUNTIME_IMPORTED
+    if _RUNTIME_IMPORTED:
+        return
+    from vllm import LLM as _LLM, SamplingParams as _SamplingParams
+
+    from experiment2.semantic_cache import SemanticCache as _SemanticCache, SemanticCacheConfig as _SemanticCacheConfig
+    from experiment2.semantic_cache.embedding_hooks import (
+        EmbeddingHook as _EmbeddingHook,
+        NullEmbeddingHook as _NullEmbeddingHook,
+        load_embedding_hook as _load_embedding_hook,
+    )
+    from experiment2.test_vllm import (
+        PromptResult as _PromptResult,
+        build_prompts as _build_prompts,
+        load_gqa_dataset as _load_gqa_dataset,
+        parse_embedding_layer_spec as _parse_embedding_layer_spec,
+        run_samples as _run_samples,
+    )
+
+    globals().update(
+        {
+            "LLM": _LLM,
+            "SamplingParams": _SamplingParams,
+            "SemanticCache": _SemanticCache,
+            "SemanticCacheConfig": _SemanticCacheConfig,
+            "EmbeddingHook": _EmbeddingHook,
+            "NullEmbeddingHook": _NullEmbeddingHook,
+            "load_embedding_hook": _load_embedding_hook,
+            "PromptResult": _PromptResult,
+            "build_prompts": _build_prompts,
+            "load_gqa_dataset": _load_gqa_dataset,
+            "parse_embedding_layer_spec": _parse_embedding_layer_spec,
+            "run_samples": _run_samples,
+        }
+    )
+    _RUNTIME_IMPORTED = True
 def aggregate_results(results: Sequence[PromptResult]) -> dict[str, Any]:
     total = len(results)
     hits = [result for result in results if result.hit]
@@ -140,6 +186,7 @@ def _release_llm(llm: LLM | None) -> None:
 
 
 def run_spec(spec: ExperimentSpec, *, cache_mode: str) -> tuple[dict[str, Any], list[PromptResult]]:
+    _import_runtime()
     limit = spec.limit()
     dataset = load_gqa_dataset(spec.dataset_config, spec.split, limit, spec.shuffle_seed)
     prompts = build_prompts(dataset, spec.prompt_template, spec.chunk_source)
@@ -158,10 +205,12 @@ def run_spec(spec: ExperimentSpec, *, cache_mode: str) -> tuple[dict[str, Any], 
             max_cached_blocks=spec.max_cached_blocks,
             cache_dir=spec.cache_dir,
             index_encoder=spec.index_encoder,
+            index_encoder_device=spec.index_encoder_device,
             embedding_layers=layer_configs,
             enable_fusion_cache=spec.enable_fusion_cache,
             fusion_cache_dir=spec.fusion_cache_dir,
             enable_semantic_text_cache=spec.enable_semantic_text_cache,
+            enable_exact_text_cache=spec.enable_exact_text_cache,
             dry_run=(cache_mode != "live"),
         )
         cache = SemanticCache(llm, config=cache_config)
@@ -172,7 +221,14 @@ def run_spec(spec: ExperimentSpec, *, cache_mode: str) -> tuple[dict[str, Any], 
         else:
             embedding_hook = NullEmbeddingHook()
         start = time.perf_counter()
-        results = run_samples(llm, cache, prompts, sampling_params, embedding_hook=embedding_hook)
+        results = run_samples(
+            llm,
+            cache,
+            prompts,
+            sampling_params,
+            embedding_hook=embedding_hook,
+            model_name=getattr(spec, "model", None),
+        )
         duration = time.perf_counter() - start
         aggregates = aggregate_results(results)
         aggregates["wall_time"] = duration
@@ -188,7 +244,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--specs", required=True, help="Path to JSON spec file describing experiments.")
     parser.add_argument(
         "--log-file",
-        default="experiment_logs.csv",
+        default="experiment2/experiment_logs.csv",
         help="CSV file where per-experiment summaries are appended.",
     )
     parser.add_argument(
@@ -211,6 +267,11 @@ def parse_args() -> argparse.Namespace:
         "--purge-cache-between-runs",
         action="store_true",
         help="Delete cache/fusion directories before each experiment to avoid cross-run reuse.",
+    )
+    parser.add_argument(
+        "--emit-commands",
+        action="store_true",
+        help="Print per-experiment commands for experiment2/test_vllm.py and exit without running.",
     )
     return parser.parse_args()
 
@@ -251,6 +312,22 @@ def main() -> None:
     if not specs:
         print("No experiments defined in spec file.")
         return
+
+    if args.emit_commands:
+        for idx, spec in enumerate(specs):
+            print(f"# {spec.name}")
+            print(
+                build_test_vllm_command(
+                    spec,
+                    cache_mode=args.cache_mode,
+                    log_file=args.log_file,
+                    samples_dir=args.samples_dir,
+                )
+            )
+            if idx != len(specs) - 1:
+                print()
+        return
+
     log_path = Path(args.log_file)
     completed = load_completed(log_path) if args.resume else set()
     samples_dir = Path(args.samples_dir) if args.samples_dir else None

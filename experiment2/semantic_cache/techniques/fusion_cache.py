@@ -44,7 +44,7 @@ class NullFusionProvider:
 class FusionStateStore:
     """Disk-backed persistence for fusion states."""
 
-    def __init__(self, root: str | Path = "fusion_chunks") -> None:
+    def __init__(self, root: str | Path = "experiment2/fusion_chunks") -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
 
@@ -71,7 +71,7 @@ class FusionCache:
         self,
         provider: FusionProvider,
         *,
-        root: str | Path = "fusion_chunks",
+        root: str | Path = "experiment2/fusion_chunks",
     ) -> None:
         self.provider = provider
         self.store = FusionStateStore(root)

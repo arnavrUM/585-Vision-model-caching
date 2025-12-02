@@ -46,7 +46,7 @@ if "sentence_transformers" not in sys.modules:
     fake_st.SentenceTransformer = _SentenceTransformer
     sys.modules["sentence_transformers"] = fake_st
 
-from experiment.specs import ExperimentSpec
+from experiment2.specs import ExperimentSpec
 
 
 def test_experiment_spec_consumes_preset_values() -> None:
@@ -56,6 +56,7 @@ def test_experiment_spec_consumes_preset_values() -> None:
     assert spec.embedding_layers == ["prompt:384:0.8", "vision:512:0.82"]
     assert spec.preset == "internvl3.5-2b"
     assert spec.enable_semantic_text_cache is True
+    assert spec.enable_exact_text_cache is True
 
 
 def test_experiment_spec_preset_can_be_overridden() -> None:
@@ -78,3 +79,4 @@ def test_experiment_spec_inherits_default_preset() -> None:
     assert spec.max_samples == 32
     assert spec.preset == "internvl3.5-2b"
     assert spec.enable_semantic_text_cache is True
+    assert spec.enable_exact_text_cache is True

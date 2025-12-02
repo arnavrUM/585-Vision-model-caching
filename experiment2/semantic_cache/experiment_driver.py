@@ -54,6 +54,7 @@ def run_prompts(
         if hit is None:
             cache.add_observation(request_id, chunk_text)
         text = drain_request(engine, request_id)
+        cache.finalize_observation(request_id, response=text, model_name=None)
         latency = time.perf_counter() - start
         stats.append((prompt, hit, latency))
 

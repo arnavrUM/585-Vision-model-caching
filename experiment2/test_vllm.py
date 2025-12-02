@@ -5,14 +5,17 @@ import csv
 import json
 import os
 import re
+import shutil
 import statistics
 import sys
 import time
 import uuid
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Sequence
 from urllib.parse import urlparse
 
 if __package__ is None or __package__ == "":
@@ -45,22 +48,64 @@ from vllm.v1.metrics.reader import (
     Vector as MetricVector,
 )
 
-from experiment.model_presets import BASE_PROMPT_TEMPLATE, apply_preset_to_args, list_model_presets
-from experiment.semantic_cache import SemanticCache, SemanticCacheConfig
-from experiment.semantic_cache.techniques import EmbeddingLayerConfig
-from experiment.semantic_cache.embedding_hooks import (
+from experiment2.model_presets import BASE_PROMPT_TEMPLATE, apply_preset_to_args, list_model_presets
+from experiment2.model_router import ModelRouter, ModelRouterConfig
+from experiment2.semantic_cache import SemanticCache, SemanticCacheConfig
+from experiment2.semantic_cache.embedding_hooks import (
     EmbeddingHook,
     NullEmbeddingHook,
     load_embedding_hook,
 )
-from experiment.semantic_cache.experiment_driver import drain_request
-from experiment.semantic_cache.semantic_cache import CacheHit, ReuseReport
+from experiment2.semantic_cache.experiment_driver import drain_request
+from experiment2.semantic_cache.semantic_cache import CacheHit, ReuseReport
+from experiment2.semantic_cache.techniques import EmbeddingLayerConfig
 
 LLAVA_DATA_URL = (
     "https://huggingface.co/datasets/liuhaotian/LLaVA-Instruct-150K/"
     "resolve/main/llava_instruct_150k.json?download=1"
 )
-LLAVA_CACHE_DIR = Path("dataset_cache")
+
+
+@lru_cache(maxsize=1)
+def _scratch_root() -> Path | None:
+    candidates: tuple[str | None, ...] = (
+        os.environ.get("VMC_CACHE_ROOT"),
+        os.environ.get("SCRATCH_DIR"),
+        "/workspace",
+    )
+    for candidate in candidates:
+        if not candidate:
+            continue
+        root_path = Path(candidate).expanduser()
+        try:
+            root_path.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            continue
+        if os.access(root_path, os.W_OK):
+            return root_path
+    return None
+
+
+def _resolve_storage_dir(path_str: str) -> Path:
+    path = Path(path_str).expanduser()
+    if path.is_absolute():
+        return path
+    scratch_root = _scratch_root()
+    if scratch_root is not None:
+        return scratch_root / path
+    return Path.cwd() / path
+
+
+def _maybe_log_relocated(label: str, requested: str, resolved: Path) -> None:
+    requested_path = Path(requested).expanduser()
+    if requested_path.is_absolute():
+        return
+    default = Path.cwd() / requested_path
+    if resolved != default:
+        print(f"[info] {label} resolved to {resolved}")
+
+
+LLAVA_CACHE_DIR = _resolve_storage_dir("experiment2/dataset_cache")
 
 
 def _ensure_llava_file(data_url: str) -> Path:
@@ -419,16 +464,18 @@ def build_prompts(
 
 def run_samples(
     llm: LLM,
-    cache: SemanticCache,
+    cache: Any,
     prompts: Sequence[GQAPrompt],
     sampling_params: SamplingParams,
     *,
     embedding_hook: EmbeddingHook | None = None,
+    model_name: str | None = None,
 ) -> list[PromptResult]:
     engine = llm.llm_engine
     results: list[PromptResult] = []
     total = len(prompts)
     start_run = time.perf_counter()
+    requires_llm_request = getattr(cache, "requires_llm_request", True)
     for idx, sample in enumerate(prompts, 1):
         request_id = uuid.uuid4().hex
         embeddings: dict[str, np.ndarray] = {}
@@ -438,21 +485,51 @@ def run_samples(
             except Exception as exc:
                 print(f"[warn] embedding hook failed for {sample.dataset_id}: {exc}")
                 embeddings = {}
-        engine.add_request(request_id, sample.prompt, sampling_params)
-        reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
+        engine_request_added = False
+        if requires_llm_request:
+            engine.add_request(request_id, sample.prompt, sampling_params)
+            engine_request_added = True
+            reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
+        else:
+            reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
+            if reuse.response is None:
+                engine.add_request(request_id, sample.prompt, sampling_params)
+                engine_request_added = True
         hit = reuse.hit
-        if hit is None:
-            cache.add_observation(request_id, sample.chunk_text, embeddings=embeddings)
-        start = time.perf_counter()
-        response = drain_request(engine, request_id)
-        latency = time.perf_counter() - start
-        is_correct = _answer_matches(sample.reference, response)
+        sample_metadata = {"dataset_id": sample.dataset_id, "image_id": sample.image_id}
+        response_text: str
+        latency: float
+        if reuse.response is not None:
+            response_text = reuse.response.strip()
+            latency = 0.0
+        else:
+            if not engine_request_added:
+                engine.add_request(request_id, sample.prompt, sampling_params)
+                engine_request_added = True
+            if hit is None:
+                cache.add_observation(
+                    request_id,
+                    sample.chunk_text,
+                    embeddings=embeddings,
+                    metadata=sample_metadata,
+                )
+            start = time.perf_counter()
+            response = drain_request(engine, request_id)
+            latency = time.perf_counter() - start
+            response_text = response.strip()
+            cache.finalize_observation(
+                request_id,
+                response=response_text,
+                model_name=model_name,
+                metadata=sample_metadata,
+            )
+        is_correct = _answer_matches(sample.reference, response_text)
         results.append(
             PromptResult(
                 sample=sample,
                 hit=hit,
                 latency=latency,
-                response=response.strip(),
+                response=response_text,
                 is_correct=is_correct,
                 techniques=reuse.statuses,
             )
@@ -470,6 +547,37 @@ def run_samples(
             f"{technique_str}"
         )
     return results
+
+
+def aggregate_results(results: Sequence[PromptResult]) -> dict[str, Any]:
+    total = len(results)
+    hits = [result for result in results if result.hit]
+    misses = [result for result in results if not result.hit]
+    latencies = [result.latency for result in results]
+    matchable = [result for result in results if result.is_correct is not None]
+
+    def _mean(values: Iterable[float]) -> float | None:
+        return float(statistics.mean(values)) if values else None
+
+    accuracy = None
+    if matchable:
+        accuracy = sum(1 for result in matchable if result.is_correct) / len(matchable)
+
+    breakdown: dict[str, int] = {}
+    for result in hits:
+        source = result.hit.source if result.hit else "unknown"
+        breakdown[source] = breakdown.get(source, 0) + 1
+
+    return {
+        "total_prompts": total,
+        "cache_hits": len(hits),
+        "cache_hit_rate": (len(hits) / total) if total else 0.0,
+        "avg_latency": _mean(latencies),
+        "avg_latency_hit": _mean([result.latency for result in hits]),
+        "avg_latency_miss": _mean([result.latency for result in misses]),
+        "answer_accuracy": accuracy,
+        "hit_breakdown": breakdown,
+    }
 
 
 def summarize_results(results: Sequence[PromptResult]) -> None:
@@ -586,6 +694,96 @@ def log_results_csv(path: str | Path | None, results: Sequence[PromptResult]) ->
             )
 
 
+def write_samples_jsonl(path: str | Path, results: Sequence[PromptResult]) -> None:
+    json_path = Path(path)
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    with json_path.open("w", encoding="utf-8") as handle:
+        for result in results:
+            payload = {
+                "dataset_id": result.sample.dataset_id,
+                "image_id": result.sample.image_id,
+                "question": result.sample.question,
+                "chunk_text": result.sample.chunk_text,
+                "prompt": result.sample.prompt,
+                "hit": bool(result.hit),
+                "hit_source": result.hit.source if result.hit else None,
+                "latency": result.latency,
+                "response": result.response,
+                "reference": result.sample.reference,
+                "is_correct": result.is_correct,
+            }
+            handle.write(json.dumps(payload) + "\n")
+
+
+def log_summary_row(path: str | Path, args: argparse.Namespace, aggregates: dict[str, Any]) -> None:
+    log_path = Path(path)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    max_samples = args.max_samples if args.max_samples is not None else -1
+    shuffle_seed: str | int | None = args.shuffle_seed
+    if isinstance(shuffle_seed, int) and shuffle_seed < 0:
+        shuffle_seed = ""
+    row = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "experiment": args.experiment_name or "",
+        "model": args.model,
+        "dataset_config": args.dataset_config,
+        "split": args.split,
+        "max_samples": max_samples,
+        "shuffle_seed": shuffle_seed if shuffle_seed is not None else "",
+        "chunk_source": args.chunk_source,
+        "prompt_template": args.prompt_template.replace("\n", "\\n"),
+        "similarity_threshold": args.similarity_threshold,
+        "embedding_layers": ",".join(args.embedding_layer),
+        "embedding_hook": args.embedding_hook,
+        "max_cached_blocks": args.max_cached_blocks if args.max_cached_blocks is not None else "",
+        "cache_dir": args.cache_dir,
+        "index_encoder": args.index_encoder,
+        "index_encoder_device": args.index_encoder_device,
+        "temperature": args.temperature,
+        "max_tokens": args.max_tokens,
+        "trust_remote_code": args.trust_remote_code,
+        "notes": "",
+        "tensor_parallel_size": args.tensor_parallel_size,
+        "gpu_memory_utilization": args.gpu_memory_utilization,
+        "enable_fusion_cache": args.enable_fusion_cache,
+        "fusion_cache_dir": args.fusion_cache_dir,
+        "enable_semantic_text_cache": not args.disable_semantic_cache,
+        "enable_exact_text_cache": not args.disable_exact_cache,
+        "preset": args.preset or "",
+        "total_prompts": aggregates["total_prompts"],
+        "cache_hits": aggregates["cache_hits"],
+        "cache_hit_rate": aggregates["cache_hit_rate"],
+        "avg_latency": aggregates["avg_latency"],
+        "avg_latency_hit": aggregates["avg_latency_hit"],
+        "avg_latency_miss": aggregates["avg_latency_miss"],
+        "answer_accuracy": aggregates["answer_accuracy"],
+        "wall_time": aggregates.get("wall_time"),
+        "hit_breakdown": json.dumps(aggregates["hit_breakdown"]),
+    }
+    fieldnames = list(row.keys())
+    file_exists = log_path.exists()
+    with log_path.open("a", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def _purge_cache_dir(path_str: str | None) -> None:
+    if not path_str:
+        return
+    path = Path(path_str).expanduser()
+    try:
+        resolved = path.resolve()
+    except FileNotFoundError:
+        resolved = path
+    if not resolved.exists():
+        return
+    if resolved == resolved.anchor:
+        raise RuntimeError(f"Refusing to purge root directory: {resolved}")
+    shutil.rmtree(resolved, ignore_errors=True)
+
+
 def _slug(value: str) -> str:
     value = value.strip().replace("/", "-")
     slug = re.sub(r"[^A-Za-z0-9._-]+", "-", value)
@@ -599,7 +797,7 @@ def _default_log_path(args: argparse.Namespace) -> Path:
     chunk = _slug(getattr(args, "chunk_source", "chunk"))
     model = _slug(getattr(args, "model", "model"))
     filename = f"{timestamp}-{dataset}-{chunk}-{model}.csv"
-    return Path("experiment_logs") / filename
+    return Path("experiment2/experiment_logs") / filename
 
 
 def _format_metric_value(metric: VLLMMetric) -> object:
@@ -658,6 +856,18 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         type=int,
         default=1,
         help="How many GPUs to use for tensor parallelism.",
+    )
+    parser.add_argument(
+        "--gpu-memory-utilization",
+        type=float,
+        default=0.9,
+        help="Fraction of each GPU memory vLLM is allowed to use (0-1).",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help="Optional cap on vLLM max model length to curb KV cache allocation.",
     )
     parser.add_argument(
         "--dataset",
@@ -729,11 +939,42 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Optional cap on how many KV blocks are stored per chunk.",
     )
-    parser.add_argument("--cache-dir", default="kv_chunks", help="Where cached KV chunks are stored.")
+    parser.add_argument(
+        "--cache-dir",
+        default="experiment2/kv_chunks",
+        help="Where cached KV chunks are stored.",
+    )
+    parser.add_argument(
+        "--cache-backend",
+        choices=["semantic-kv", "model-router"],
+        default="semantic-kv",
+        help="Selects the caching backend. 'semantic-kv' reuses KV blocks via vLLM; "
+        "'model-router' performs response-level shortcutting based on semantic matches.",
+    )
     parser.add_argument(
         "--index-encoder",
         default="sentence-transformers/all-MiniLM-L6-v2",
         help="Sentence-transformers model used for semantic search.",
+    )
+    parser.add_argument(
+        "--index-encoder-device",
+        default="cuda",
+        help="Device to run the semantic text encoder on (e.g., 'cuda:0', 'cpu').",
+    )
+    parser.add_argument(
+        "--fusion-cache-dir",
+        default="experiment2/fusion_chunks",
+        help="Directory for persisted fusion cache states (if enabled).",
+    )
+    parser.add_argument(
+        "--enable-fusion-cache",
+        action="store_true",
+        help="Capture and inject fusion tensors in addition to KV cache blocks.",
+    )
+    parser.add_argument(
+        "--keep-cache-dirs",
+        action="store_true",
+        help="Skip purging cache/fusion directories before running (default purges).",
     )
     parser.add_argument(
         "--temperature",
@@ -756,7 +997,22 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--log-csv",
         default=None,
-        help="Path to the CSV log file. Defaults to experiment_logs/run-<timestamp>.csv.",
+        help="Path to the CSV log file. Defaults to experiment2/experiment_logs/run-<timestamp>.csv.",
+    )
+    parser.add_argument(
+        "--summary-log",
+        default=None,
+        help="Optional CSV file where aggregate metrics are appended (matches run_experiments format).",
+    )
+    parser.add_argument(
+        "--samples-jsonl",
+        default=None,
+        help="Optional JSONL path for per-sample dumps (mirrors run_experiments).",
+    )
+    parser.add_argument(
+        "--experiment-name",
+        default=None,
+        help="Optional label recorded in summary logs (e.g., qwen-exact-only).",
     )
     parser.add_argument(
         "--llava-data-url",
@@ -780,6 +1036,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Completely bypass the semantic text cache layer.",
     )
+    parser.add_argument(
+        "--disable-exact-cache",
+        action="store_true",
+        help="Disable the normalized exact-text cache layer.",
+    )
     defaults = parser.parse_args(args=[])
     args = parser.parse_args(args=argv)
     apply_preset_to_args(args, defaults)
@@ -788,13 +1049,26 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if args.cache_dir:
+        resolved_cache_dir = _resolve_storage_dir(args.cache_dir)
+        _maybe_log_relocated("cache_dir", args.cache_dir, resolved_cache_dir)
+        args.cache_dir = str(resolved_cache_dir)
+    if args.fusion_cache_dir:
+        resolved_fusion_dir = _resolve_storage_dir(args.fusion_cache_dir)
+        _maybe_log_relocated("fusion_cache_dir", args.fusion_cache_dir, resolved_fusion_dir)
+        args.fusion_cache_dir = str(resolved_fusion_dir)
     limit = None if args.max_samples is None or args.max_samples < 0 else args.max_samples
+    shuffle_seed = None if args.shuffle_seed is None or args.shuffle_seed < 0 else args.shuffle_seed
+    if not args.keep_cache_dirs:
+        _purge_cache_dir(args.cache_dir)
+        if args.enable_fusion_cache:
+            _purge_cache_dir(args.fusion_cache_dir)
     if args.dataset == "gqa":
-        dataset = load_gqa_dataset(args.dataset_config, args.split, limit, args.shuffle_seed)
+        dataset = load_gqa_dataset(args.dataset_config, args.split, limit, shuffle_seed)
         base_samples: Sequence[dict] = dataset
         dataset_label = f"lmms-lab/GQA ({args.dataset_config}, split={args.split})"
     elif args.dataset == "llava150k":
-        dataset = load_llava_dataset(args.llava_data_url, limit, args.shuffle_seed)
+        dataset = load_llava_dataset(args.llava_data_url, limit, shuffle_seed)
         base_samples = build_llava_records(dataset)
         dataset_label = "LLaVA-Instruct-150K"
     else:
@@ -811,20 +1085,38 @@ def main() -> None:
             trust_remote_code=args.trust_remote_code,
             disable_log_stats=args.disable_log_stats,
             tensor_parallel_size=args.tensor_parallel_size,
+            gpu_memory_utilization=args.gpu_memory_utilization,
+            max_model_len=args.max_model_len,
         )
     except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
         _raise_model_load_help(args.model, exc)
     layer_configs = [parse_embedding_layer_spec(spec) for spec in args.embedding_layer]
-    cache_config = SemanticCacheConfig(
-        similarity_threshold=args.similarity_threshold,
-        max_cached_blocks=args.max_cached_blocks,
-        cache_dir=args.cache_dir,
-        index_encoder=args.index_encoder,
-        embedding_layers=layer_configs,
-        dry_run=(args.cache_mode != "live"),
-        enable_semantic_text_cache=not args.disable_semantic_cache,
-    )
-    cache = SemanticCache(llm, config=cache_config)
+    if args.cache_backend == "semantic-kv":
+        cache_config = SemanticCacheConfig(
+            similarity_threshold=args.similarity_threshold,
+            max_cached_blocks=args.max_cached_blocks,
+            cache_dir=args.cache_dir,
+            index_encoder=args.index_encoder,
+            index_encoder_device=args.index_encoder_device,
+            fusion_cache_dir=args.fusion_cache_dir,
+            enable_fusion_cache=args.enable_fusion_cache,
+            embedding_layers=layer_configs,
+            dry_run=(args.cache_mode != "live"),
+            enable_semantic_text_cache=not args.disable_semantic_cache,
+            enable_exact_text_cache=not args.disable_exact_cache,
+        )
+        cache: Any = SemanticCache(llm, config=cache_config)
+    else:
+        router_config = ModelRouterConfig(
+            similarity_threshold=args.similarity_threshold,
+            response_cache_dir=args.cache_dir,
+            index_encoder=args.index_encoder,
+            index_encoder_device=args.index_encoder_device,
+            embedding_layers=layer_configs,
+            enable_semantic_text_cache=not args.disable_semantic_cache,
+            enable_exact_text_cache=not args.disable_exact_cache,
+        )
+        cache = ModelRouter(llm, config=router_config)
     sampling_params = SamplingParams(temperature=args.temperature, max_tokens=args.max_tokens)
 
     embedding_hook: EmbeddingHook | None
@@ -833,11 +1125,26 @@ def main() -> None:
     else:
         embedding_hook = NullEmbeddingHook()
 
-    results = run_samples(llm, cache, prompts, sampling_params, embedding_hook=embedding_hook)
+    start_overall = time.perf_counter()
+    results = run_samples(
+        llm,
+        cache,
+        prompts,
+        sampling_params,
+        embedding_hook=embedding_hook,
+        model_name=args.model,
+    )
+    wall_time = time.perf_counter() - start_overall
+    aggregates = aggregate_results(results)
+    aggregates["wall_time"] = wall_time
     summarize_results(results)
     log_path = args.log_csv or _default_log_path(args)
     log_results_csv(log_path, results)
     print(f"Detailed results saved to {log_path}")
+    if args.summary_log:
+        log_summary_row(args.summary_log, args, aggregates)
+    if args.samples_jsonl:
+        write_samples_jsonl(args.samples_jsonl, results)
     summarize_vllm_metrics(llm)
 
     print("\n=== Sample outputs ===")

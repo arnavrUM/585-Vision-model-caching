@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from experiment.model_presets import (
+from experiment2.model_presets import (
     apply_preset_to_args,
     get_model_preset,
     list_model_presets,
@@ -17,6 +17,8 @@ def _make_namespace(**overrides) -> Namespace:
         embedding_layer=[],
         embedding_hook="none",
         similarity_threshold=0.8,
+        index_encoder_device="cuda",
+        disable_exact_cache=False,
         temperature=0.0,
         max_tokens=64,
         notes=None,

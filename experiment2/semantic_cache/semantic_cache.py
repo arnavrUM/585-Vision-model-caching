@@ -26,13 +26,15 @@ class SemanticCacheConfig:
     similarity_threshold: float = 0.85
     max_cached_blocks: int | None = None
     index_encoder: str = "sentence-transformers/all-MiniLM-L6-v2"
-    cache_dir: str = "kv_chunks"
+    index_encoder_device: str = "cuda"
+    cache_dir: str = "experiment2/kv_chunks"
     text_cache_index: str = "text_index.json"
     enable_fusion_cache: bool = False
-    fusion_cache_dir: str = "fusion_chunks"
+    fusion_cache_dir: str = "experiment2/fusion_chunks"
     embedding_layers: list[EmbeddingLayerConfig] = field(default_factory=list)
     dry_run: bool = False
     enable_semantic_text_cache: bool = True
+    enable_exact_text_cache: bool = True
 
 
 @dataclass
@@ -46,10 +48,13 @@ class CacheHit:
 class ReuseReport:
     hit: CacheHit | None
     statuses: dict[str, str]
+    response: str | None = None
 
 
 class SemanticCache:
     """Semantic chunk reuse built on top of the vLLM execution engine."""
+
+    requires_llm_request = True
 
     def __init__(
         self,
@@ -66,12 +71,15 @@ class SemanticCache:
         self.adapter = VLLMEngineAdapter(llm)
         if self.config.enable_semantic_text_cache:
             self.semantic_text_cache = index or SemanticTextCache(
-                encoder_name=self.config.index_encoder
+                encoder_name=self.config.index_encoder,
+                device=self.config.index_encoder_device,
             )
         else:
             self.semantic_text_cache = None
         self.store = store or KVStore(self.config.cache_dir)
-        self.exact_cache = ExactTextCache(self.config.cache_dir, self.config.text_cache_index)
+        self.exact_cache: ExactTextCache | None = None
+        if self.config.enable_exact_text_cache:
+            self.exact_cache = ExactTextCache(self.config.cache_dir, self.config.text_cache_index)
         self.embedding_cache: EmbeddingCache | None = (
             EmbeddingCache(self.config.embedding_layers) if self.config.embedding_layers else None
         )
@@ -86,7 +94,8 @@ class SemanticCache:
         if self.semantic_text_cache:
             self.semantic_text_cache.add(chunk.chunk_id, chunk_text)
         self.store.save(chunk)
-        self.exact_cache.record(chunk_text, chunk.chunk_id)
+        if self.exact_cache:
+            self.exact_cache.record(chunk_text, chunk.chunk_id)
     def _capture_fusion_state(self, request_id: str, chunk_id: str) -> None:
         if not self.fusion_cache:
             return
@@ -128,10 +137,11 @@ class SemanticCache:
         embeddings: dict[str, np.ndarray] | None = None,
     ) -> ReuseReport:
         statuses: dict[str, str] = {"kv_cache": "miss"}
-        normalized = self.exact_cache.normalize(chunk_text)
-        if normalized:
-            statuses["exact_text"] = "miss"
+        if self.exact_cache:
+            normalized = self.exact_cache.normalize(chunk_text)
+            statuses["exact_text"] = "miss" if normalized else "skip"
         else:
+            normalized = ""
             statuses["exact_text"] = "skip"
 
         if self.semantic_text_cache:
@@ -195,6 +205,8 @@ class SemanticCache:
         return ReuseReport(hit=hit, statuses=dict(statuses))
 
     def _exact_text_match(self, request_id: str, normalized: str) -> CacheHit | None:
+        if not self.exact_cache:
+            return None
         chunk_ids = self.exact_cache.candidates(normalized)
         for chunk_id in chunk_ids:
             stored = self.store.load(chunk_id)
@@ -218,6 +230,7 @@ class SemanticCache:
         chunk_text: str,
         chunk_id: str | None = None,
         embeddings: dict[str, np.ndarray] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> KVChunk | None:
         if self.config.dry_run:
             stub = KVChunk(
@@ -251,6 +264,17 @@ class SemanticCache:
                 chunk.metadata.setdefault("embeddings", list(embeddings))
 
         self.adapter.register_on_free(request_id, _capture_and_store)
+        return None
+
+    def finalize_observation(
+        self,
+        request_id: str,
+        *,
+        response: str | None = None,
+        model_name: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        # The semantic cache captures KV blocks asynchronously; nothing to finalize here.
         return None
 
     def close(self) -> None:

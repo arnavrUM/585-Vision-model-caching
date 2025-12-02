@@ -22,6 +22,39 @@ except ImportError as exc:  # pragma: no cover - optional dependency
     ) from exc
 
 
+_ENCODER_CACHE: dict[tuple[str, str], SentenceTransformer] = {}
+
+
+def _resolve_encoder(name: str, device: str) -> SentenceTransformer:
+    attempts = [device]
+    normalized = device.lower()
+    if normalized.startswith("cuda") and "cpu" not in attempts:
+        attempts.append("cpu")
+    last_error: Exception | None = None
+    for target in attempts:
+        key = (name, target)
+        encoder = _ENCODER_CACHE.get(key)
+        if encoder is not None:
+            if target != device:
+                _ENCODER_CACHE[(name, device)] = encoder
+            return encoder
+        try:
+            encoder = SentenceTransformer(name, device=target)
+        except Exception as exc:  # pragma: no cover - defensive
+            last_error = exc
+            continue
+        _ENCODER_CACHE[key] = encoder
+        if target != device:
+            _ENCODER_CACHE[(name, device)] = encoder
+            print(
+                f"[warn] semantic text encoder could not use device '{device}'; falling back to '{target}'."
+            )
+        return encoder
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"Failed to initialize sentence-transformer '{name}' for device '{device}'.")
+
+
 @dataclass
 class SemanticTextMatch:
     chunk_id: str
@@ -35,8 +68,9 @@ class SemanticTextCache:
         self,
         encoder_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         dim: int | None = None,
+        device: str = "cpu",
     ) -> None:
-        self.encoder = SentenceTransformer(encoder_name)
+        self.encoder = _resolve_encoder(encoder_name, device)
         self.dim = dim or self.encoder.get_sentence_embedding_dimension()
         self.index = faiss.IndexFlatIP(self.dim)
         self.ids: list[str] = []

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 import torch
+from vllm.platforms import current_platform
 
 from .kv_protocols import KVChunk
 
@@ -97,18 +98,12 @@ class VLLMEngineAdapter:
             raise RuntimeError("No KV cache tensors discovered.")
         return kv_map
 
-    def _select_blocks(self, tensor: torch.Tensor, block_ids: list[int]) -> torch.Tensor:
-        block_index = torch.as_tensor(block_ids, device=tensor.device, dtype=torch.long)
-        return tensor.index_select(0, block_index).detach().cpu().contiguous()
-
-    def _scatter_blocks(
-        self,
-        tensor: torch.Tensor,
-        block_ids: list[int],
-        values: torch.Tensor,
-    ) -> None:
-        block_index = torch.as_tensor(block_ids, device=tensor.device, dtype=torch.long)
-        tensor.index_copy_(0, block_index, values.to(tensor.device))
+    def _alloc_host_cache(self, tensor: torch.Tensor, num_blocks: int) -> torch.Tensor:
+        if tensor.ndim < 2:
+            raise RuntimeError("Unexpected KV cache tensor layout; need >=2 dims.")
+        shape = list(tensor.shape)
+        shape[1] = num_blocks
+        return torch.empty(shape, dtype=tensor.dtype, device="cpu")
 
     # ------------------------------------------------------------------ public
     def capture(
@@ -131,10 +126,14 @@ class VLLMEngineAdapter:
         if num_blocks is not None:
             block_ids = block_ids[:num_blocks]
 
-        tensors = {
-            layer_name: self._select_blocks(tensor, block_ids)
-            for layer_name, tensor in self._layer_kv_map().items()
-        }
+        platform = current_platform
+        tensors: dict[str, torch.Tensor] = {}
+        for layer_name, tensor in self._layer_kv_map().items():
+            host_cache = self._alloc_host_cache(tensor, len(block_ids))
+            src_index = torch.as_tensor(block_ids, device=tensor.device, dtype=torch.long)
+            dst_index = torch.arange(len(block_ids), device=host_cache.device, dtype=torch.long)
+            platform.swap_out_blocks_to_host(tensor, host_cache, src_index, dst_index)
+            tensors[layer_name] = host_cache
         block_size = getattr(self.scheduler, "block_size", None)
         num_tokens = len(block_ids) * block_size if block_size else len(block_ids)
         return KVChunk(
@@ -153,15 +152,24 @@ class VLLMEngineAdapter:
         if not block_groups:
             return False
         dst_block_ids = list(block_groups[0])
-        if len(dst_block_ids) < len(chunk.block_ids):
+        needed = len(chunk.block_ids)
+        if len(dst_block_ids) < needed:
             return False
+        target_block_ids = dst_block_ids[:needed]
 
+        platform = current_platform
         available_layers = self._layer_kv_map()
         for layer_name, tensor in available_layers.items():
             cached = chunk.tensors.get(layer_name)
             if cached is None:
                 continue
-            self._scatter_blocks(tensor, chunk.block_ids, cached)
+            src_index = torch.arange(
+                len(chunk.block_ids), device=cached.device, dtype=torch.long
+            )
+            dst_index = torch.as_tensor(
+                target_block_ids, device=tensor.device, dtype=torch.long
+            )
+            platform.insert_blocks_to_device(cached, tensor, src_index, dst_index)
         return True
 
     def close(self) -> None:
