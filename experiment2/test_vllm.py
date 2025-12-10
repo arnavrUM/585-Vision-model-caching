@@ -308,6 +308,47 @@ def _extract_llava_qa(conversations: list[dict]) -> tuple[str, str] | None:
     return None
 
 
+def load_video_frames_dataset(data_path: str, limit: int | None, seed: int | None) -> list[dict]:
+    """Load video frames dataset from JSON file.
+    
+    Expected JSON format: list of dicts with fields:
+    - id: unique sample ID (e.g., "video_001_frame_0100")
+    - imageId: frame identifier (e.g., "video_001_frame_0100" or "frame_0100")
+    - question: question text
+    - answer: short answer
+    - fullAnswer: full answer (optional)
+    - groups: dict with "global" and "local" keys (optional, for scene grouping)
+    - semantic: list of semantic program steps (optional)
+    - semanticStr: semantic string representation (optional)
+    - metadata: dict with additional info like video_id, frame_number, scene_id (optional)
+    """
+    data_path_obj = Path(data_path).expanduser()
+    if not data_path_obj.exists():
+        raise FileNotFoundError(f"Video frames dataset not found at: {data_path}")
+    
+    with data_path_obj.open("r", encoding="utf-8") as fh:
+        payload = json.load(fh)
+    
+    if not isinstance(payload, list):
+        raise ValueError("Expected video frames JSON to contain a list of samples.")
+    
+    # Convert to list of dicts (already in correct format)
+    samples = list(payload)
+    
+    # Shuffle if seed provided
+    if seed is not None:
+        import random
+        random.seed(seed)
+        random.shuffle(samples)
+    
+    # Limit if provided
+    if limit is not None:
+        limit = min(limit, len(samples))
+        samples = samples[:limit]
+    
+    return samples
+
+
 def build_llava_records(dataset: Dataset) -> list[dict]:
     records: list[dict] = []
     for sample in dataset:
@@ -871,9 +912,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--dataset",
-        choices=["gqa", "llava150k", "synthetic"],
+        choices=["gqa", "llava150k", "synthetic", "video_frames"],
         default="gqa",
-        help="Dataset to evaluate (GQA, LLaVA-Instruct-150K, or the synthetic cache demo).",
+        help="Dataset to evaluate (GQA, LLaVA-Instruct-150K, synthetic cache demo, or custom video frames).",
     )
     parser.add_argument(
         "--trust-remote-code",
@@ -889,6 +930,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--split",
         default="val",
         help="Split spec understood by datasets.load_dataset (e.g., 'val[:256]').",
+    )
+    parser.add_argument(
+        "--video-frames-data",
+        default=None,
+        help="Path to video frames dataset JSON file (required when --dataset video_frames).",
     )
     parser.add_argument(
         "--max-samples",
@@ -1071,6 +1117,11 @@ def main() -> None:
         dataset = load_llava_dataset(args.llava_data_url, limit, shuffle_seed)
         base_samples = build_llava_records(dataset)
         dataset_label = "LLaVA-Instruct-150K"
+    elif args.dataset == "video_frames":
+        if not args.video_frames_data:
+            raise ValueError("--video-frames-data is required when --dataset video_frames")
+        base_samples = load_video_frames_dataset(args.video_frames_data, limit, shuffle_seed)
+        dataset_label = f"Video Frames ({args.video_frames_data})"
     else:
         dataset = build_synthetic_samples()
         base_samples = dataset if limit is None else dataset[:limit]
