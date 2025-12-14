@@ -14,8 +14,9 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 from functools import lru_cache
+from io import BytesIO
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import urlparse
 
 if __package__ is None or __package__ == "":
@@ -39,6 +40,7 @@ from huggingface_hub.errors import (
     HfHubHTTPError,
     RepositoryNotFoundError,
 )
+from PIL import Image
 from vllm import LLM, SamplingParams
 from vllm.v1.metrics.reader import (
     Counter as MetricCounter,
@@ -63,6 +65,14 @@ from experiment2.semantic_cache.techniques import EmbeddingLayerConfig
 LLAVA_DATA_URL = (
     "https://huggingface.co/datasets/liuhaotian/LLaVA-Instruct-150K/"
     "resolve/main/llava_instruct_150k.json?download=1"
+)
+DEFAULT_GQA_IMAGE_DIR = "experiment2/gqa_images"
+_IMAGE_PLACEHOLDERS = (
+    "<image>",
+    "<|image_0|>",
+    "<|vision_start|>",
+    "<img>",
+    "<|vision_start|><|image_pad|><|vision_end|>",
 )
 
 
@@ -103,6 +113,14 @@ def _maybe_log_relocated(label: str, requested: str, resolved: Path) -> None:
     default = Path.cwd() / requested_path
     if resolved != default:
         print(f"[info] {label} resolved to {resolved}")
+
+
+def _gb_to_bytes(limit_gb: float | None) -> int | None:
+    if limit_gb is None:
+        return None
+    if limit_gb <= 0:
+        return 0
+    return int(limit_gb * (1024**3))
 
 
 LLAVA_CACHE_DIR = _resolve_storage_dir("experiment2/dataset_cache")
@@ -168,6 +186,7 @@ def _raise_model_load_help(model: str, exc: Exception) -> None:
 class GQAPrompt:
     dataset_id: str
     image_id: str
+    image_path: str | None
     question: str
     answer: str
     full_answer: str
@@ -188,6 +207,55 @@ class PromptResult:
     response: str
     is_correct: bool | None
     techniques: dict[str, str]
+
+
+class PromptImageLoader:
+    """Opens cached dataset images once per prompt for multimodal requests."""
+
+    def __init__(self, placeholder: str = "<image>") -> None:
+        self._warned_paths: set[str] = set()
+        self.placeholder = placeholder
+
+    def load(self, sample: GQAPrompt) -> Image.Image | None:
+        path = sample.image_path
+        if not path:
+            return None
+        try:
+            with Image.open(path) as pil_image:
+                return pil_image.convert("RGB")
+        except Exception as exc:  # pragma: no cover - defensive
+            if path not in self._warned_paths:
+                print(
+                    f"[warn] Unable to load image for sample {sample.dataset_id} "
+                    f"(image_id={sample.image_id}, path={path}): {exc}"
+                )
+                self._warned_paths.add(path)
+            return None
+
+
+def _ensure_image_placeholder(prompt: str) -> str:
+    lowered = prompt.lower()
+    if any(token.lower() in lowered for token in _IMAGE_PLACEHOLDERS):
+        return prompt
+    if prompt.strip():
+        return f"<image>\n{prompt}"
+    return "<image>"
+
+
+def _ensure_image_placeholder_custom(prompt: str, placeholder: str) -> str:
+    lowered = prompt.lower()
+    if any(token.lower() in lowered for token in _IMAGE_PLACEHOLDERS):
+        return prompt
+    if prompt.strip():
+        return f"{placeholder}\n{prompt}"
+    return placeholder
+
+
+def _default_image_placeholder(model_name: str) -> str:
+    lowered = (model_name or "").lower()
+    if "qwen" in lowered:
+        return "<|vision_start|><|image_pad|><|vision_end|>"
+    return "<image>"
 
 
 def format_prompt(template: str, sample: dict) -> str:
@@ -272,6 +340,84 @@ def load_gqa_dataset(config: str, split: str, limit: int | None, seed: int | Non
         limit = min(limit, len(dataset))
         dataset = dataset.select(range(limit))
     return dataset
+
+
+def _gqa_image_config_name(config: str) -> str:
+    if config.endswith("_instructions"):
+        return config[: -len("_instructions")] + "_images"
+    if config.endswith("_images"):
+        return config
+    return f"{config}_images"
+
+
+def _gqa_image_cache_path(root: Path, image_id: str) -> Path:
+    slug = str(image_id)
+    if len(slug) > 3:
+        return root / slug[:3] / f"{slug}.jpg"
+    return root / f"{slug}.jpg"
+
+
+def _serialize_image(image_obj: Any) -> Image.Image:
+    if isinstance(image_obj, Image.Image):
+        return image_obj.convert("RGB")
+    if isinstance(image_obj, dict) and "bytes" in image_obj:
+        return Image.open(BytesIO(image_obj["bytes"])).convert("RGB")
+    raise TypeError(f"Unsupported GQA image payload type: {type(image_obj)}")
+
+
+def ensure_gqa_images(
+    image_ids: Iterable[str],
+    dataset_config: str,
+    split: str,
+    cache_dir: Path,
+) -> dict[str, str]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    resolved: dict[str, str] = {}
+    pending: set[str] = set()
+    for raw_id in image_ids:
+        image_id = str(raw_id or "").strip()
+        if not image_id:
+            continue
+        path = _gqa_image_cache_path(cache_dir, image_id)
+        if path.is_file():
+            resolved[image_id] = str(path)
+        else:
+            pending.add(image_id)
+    if not pending:
+        return resolved
+    config_name = _gqa_image_config_name(dataset_config)
+    print(f"Downloading {len(pending)} GQA images to {cache_dir} ...")
+    dataset = load_dataset(
+        "lmms-lab/GQA",
+        config_name,
+        split=split,
+        streaming=True,
+    )
+    for sample in dataset:
+        sample_id = str(sample.get("id", "")).strip()
+        if sample_id not in pending:
+            continue
+        image = sample.get("image")
+        if image is None:
+            continue
+        image_path = _gqa_image_cache_path(cache_dir, sample_id)
+        image_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            converted = _serialize_image(image)
+            converted.save(image_path, format="JPEG")
+        except Exception as exc:
+            print(f"[warn] Failed to save image {sample_id} to {image_path}: {exc}")
+            continue
+        resolved[sample_id] = str(image_path)
+        pending.remove(sample_id)
+        if not pending:
+            break
+    if pending:
+        print(
+            f"[warn] Unable to locate {len(pending)} GQA images in split '{split}' "
+            f"(config={config_name}). Missing examples include: {sorted(list(pending))[:5]}"
+        )
+    return resolved
 
 
 def load_llava_dataset(data_url: str, limit: int | None, seed: int | None) -> Dataset:
@@ -436,6 +582,7 @@ def build_prompts(
     dataset: Iterable[dict],
     prompt_template: str,
     chunk_source: str,
+    image_paths: Mapping[str, str] | None = None,
 ) -> list[GQAPrompt]:
     prompts: list[GQAPrompt] = []
     for sample in dataset:
@@ -443,10 +590,16 @@ def build_prompts(
         chunk_text = sample.get("_chunk_override")
         if not chunk_text:
             chunk_text = render_chunk_text(sample, chunk_source)
+        image_id = sample.get("imageId", "")
+        image_path = image_paths.get(str(image_id)) if image_paths and image_id else None
+        metadata_extra = dict(sample.get("_metadata", {}) or {})
+        if image_path:
+            metadata_extra["image_path"] = str(image_path)
         prompts.append(
             GQAPrompt(
                 dataset_id=sample.get("id", ""),
                 image_id=sample.get("imageId", ""),
+                image_path=image_path,
                 question=sample.get("question", ""),
                 answer=sample.get("answer", ""),
                 full_answer=sample.get("fullAnswer", ""),
@@ -455,7 +608,7 @@ def build_prompts(
                 metadata={
                     "groups": sample.get("groups", {}),
                     "semantic": sample.get("semanticStr", ""),
-                    "extra": sample.get("_metadata", {}),
+                    "extra": metadata_extra,
                 },
             )
         )
@@ -470,6 +623,7 @@ def run_samples(
     *,
     embedding_hook: EmbeddingHook | None = None,
     model_name: str | None = None,
+    image_loader: PromptImageLoader | None = None,
 ) -> list[PromptResult]:
     engine = llm.llm_engine
     results: list[PromptResult] = []
@@ -485,16 +639,65 @@ def run_samples(
             except Exception as exc:
                 print(f"[warn] embedding hook failed for {sample.dataset_id}: {exc}")
                 embeddings = {}
+        prompt_payload: Any
+        request_prompt_text = sample.prompt
+        if image_loader is not None:
+            image = image_loader.load(sample)
+            if image is not None:
+                request_prompt_text = _ensure_image_placeholder_custom(
+                    request_prompt_text, image_loader.placeholder
+                )
+                prompt_payload = {"prompt": request_prompt_text, "multi_modal_data": {"image": image}}
+            else:
+                prompt_payload = request_prompt_text
+        else:
+            prompt_payload = request_prompt_text
+        engine_prompt = prompt_payload
+        tokenization_kwargs = None
+        process_inputs = getattr(llm, "_process_inputs", None)
+        if process_inputs is not None:
+            engine_prompt, tokenization_kwargs = process_inputs(
+                request_id,
+                prompt_payload,
+                sampling_params,
+                lora_request=None,
+                priority=0,
+            )
+        elif image_loader is not None:
+            # Multi-modal inputs require vLLM v1 processor support.
+            image_loader = None
+            print(
+                "[warn] vLLM build does not expose _process_inputs; "
+                "falling back to text-only prompts without images."
+            )
+            engine_prompt = request_prompt_text
+            prompt_payload = request_prompt_text
         engine_request_added = False
-        if requires_llm_request:
-            engine.add_request(request_id, sample.prompt, sampling_params)
+
+        print(request_prompt_text)
+        def _enqueue_request() -> None:
+            nonlocal engine_request_added
+            if engine_request_added:
+                return
+            if process_inputs is not None:
+                engine.add_request(
+                    request_id,
+                    engine_prompt,
+                    sampling_params,
+                    tokenization_kwargs=tokenization_kwargs,
+                    prompt_text=request_prompt_text,
+                )
+            else:
+                engine.add_request(request_id, request_prompt_text, sampling_params)
             engine_request_added = True
+
+        if requires_llm_request:
+            _enqueue_request()
             reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
         else:
             reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
             if reuse.response is None:
-                engine.add_request(request_id, sample.prompt, sampling_params)
-                engine_request_added = True
+                _enqueue_request()
         hit = reuse.hit
         sample_metadata = {"dataset_id": sample.dataset_id, "image_id": sample.image_id}
         response_text: str
@@ -504,8 +707,7 @@ def run_samples(
             latency = 0.0
         else:
             if not engine_request_added:
-                engine.add_request(request_id, sample.prompt, sampling_params)
-                engine_request_added = True
+                _enqueue_request()
             if hit is None:
                 cache.add_observation(
                     request_id,
@@ -876,6 +1078,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Dataset to evaluate (GQA, LLaVA-Instruct-150K, or the synthetic cache demo).",
     )
     parser.add_argument(
+        "--gqa-image-dir",
+        default=DEFAULT_GQA_IMAGE_DIR,
+        help="Directory where GQA images downloaded from Hugging Face are cached.",
+    )
+    parser.add_argument(
         "--trust-remote-code",
         action="store_true",
         help="Forward to vLLM to trust remote code when loading the model.",
@@ -943,6 +1150,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--cache-dir",
         default="experiment2/kv_chunks",
         help="Where cached KV chunks are stored.",
+    )
+    parser.add_argument(
+        "--cache-max-size-gb",
+        type=float,
+        default=None,
+        help="Optional disk budget (in GB) for KV cache; oldest chunks are pruned when exceeded.",
     )
     parser.add_argument(
         "--cache-backend",
@@ -1057,16 +1270,29 @@ def main() -> None:
         resolved_fusion_dir = _resolve_storage_dir(args.fusion_cache_dir)
         _maybe_log_relocated("fusion_cache_dir", args.fusion_cache_dir, resolved_fusion_dir)
         args.fusion_cache_dir = str(resolved_fusion_dir)
+    if getattr(args, "gqa_image_dir", None):
+        resolved_gqa_dir = _resolve_storage_dir(args.gqa_image_dir)
+        _maybe_log_relocated("gqa_image_dir", args.gqa_image_dir, resolved_gqa_dir)
+        args.gqa_image_dir = str(resolved_gqa_dir)
     limit = None if args.max_samples is None or args.max_samples < 0 else args.max_samples
+    cache_size_limit_bytes = _gb_to_bytes(getattr(args, "cache_max_size_gb", None))
     shuffle_seed = None if args.shuffle_seed is None or args.shuffle_seed < 0 else args.shuffle_seed
     if not args.keep_cache_dirs:
         _purge_cache_dir(args.cache_dir)
         if args.enable_fusion_cache:
             _purge_cache_dir(args.fusion_cache_dir)
+    image_path_map: dict[str, str] | None = None
     if args.dataset == "gqa":
         dataset = load_gqa_dataset(args.dataset_config, args.split, limit, shuffle_seed)
         base_samples: Sequence[dict] = dataset
         dataset_label = f"lmms-lab/GQA ({args.dataset_config}, split={args.split})"
+        image_ids: Iterable[str]
+        if isinstance(dataset, Dataset):
+            image_ids = dataset["imageId"]
+        else:
+            image_ids = [sample.get("imageId", "") for sample in base_samples]
+        cache_root = Path(args.gqa_image_dir)
+        image_path_map = ensure_gqa_images(image_ids, args.dataset_config, args.split, cache_root)
     elif args.dataset == "llava150k":
         dataset = load_llava_dataset(args.llava_data_url, limit, shuffle_seed)
         base_samples = build_llava_records(dataset)
@@ -1075,10 +1301,14 @@ def main() -> None:
         dataset = build_synthetic_samples()
         base_samples = dataset if limit is None else dataset[:limit]
         dataset_label = "synthetic-cache-validation"
-    prompts = build_prompts(base_samples, args.prompt_template, args.chunk_source)
+    prompts = build_prompts(
+        base_samples,
+        args.prompt_template,
+        args.chunk_source,
+        image_paths=image_path_map or {},
+    )
     print(f"Loaded {len(prompts)} prompts from {dataset_label}.")
     summarize_chunk_texts(prompts)
-
     try:
         llm = LLM(
             model=args.model,
@@ -1104,6 +1334,7 @@ def main() -> None:
             dry_run=(args.cache_mode != "live"),
             enable_semantic_text_cache=not args.disable_semantic_cache,
             enable_exact_text_cache=not args.disable_exact_cache,
+            cache_size_limit_bytes=cache_size_limit_bytes,
         )
         cache: Any = SemanticCache(llm, config=cache_config)
     else:
@@ -1118,7 +1349,16 @@ def main() -> None:
         )
         cache = ModelRouter(llm, config=router_config)
     sampling_params = SamplingParams(temperature=args.temperature, max_tokens=args.max_tokens)
-
+    prompt_image_loader: PromptImageLoader | None = None
+    if image_path_map:
+        if hasattr(llm, "_process_inputs"):
+            placeholder_text = _default_image_placeholder(args.model)
+            prompt_image_loader = PromptImageLoader(placeholder=placeholder_text)
+        else:
+            print(
+                "[warn] Installed vLLM version does not expose _process_inputs; "
+                "continuing without attaching images to prompts."
+            )
     embedding_hook: EmbeddingHook | None
     if layer_configs:
         embedding_hook = load_embedding_hook(args.embedding_hook)
@@ -1133,6 +1373,7 @@ def main() -> None:
         sampling_params,
         embedding_hook=embedding_hook,
         model_name=args.model,
+        image_loader=prompt_image_loader,
     )
     wall_time = time.perf_counter() - start_overall
     aggregates = aggregate_results(results)

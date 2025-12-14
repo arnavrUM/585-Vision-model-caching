@@ -26,3 +26,4 @@ experiment2/fusion_chunks_ablation/
 # Experiment data
 experiment2/experiment_logs/
 experiment2/dataset_cache/
+experiment2/gqa_images/

@@ -40,6 +40,8 @@ def build_test_vllm_command(
     if spec.max_cached_blocks is not None:
         _add("--max-cached-blocks", spec.max_cached_blocks)
     _add("--cache-dir", spec.cache_dir)
+    if getattr(spec, "cache_max_size_gb", None) is not None:
+        _add("--cache-max-size-gb", spec.cache_max_size_gb)
     _add("--index-encoder", spec.index_encoder)
     _add("--index-encoder-device", spec.index_encoder_device)
     _add("--fusion-cache-dir", spec.fusion_cache_dir)

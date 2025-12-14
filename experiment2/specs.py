@@ -38,6 +38,7 @@ class ExperimentSpec:
     enable_semantic_text_cache: bool = True
     enable_exact_text_cache: bool = True
     preset: str | None = None
+    cache_max_size_gb: float | None = None
 
     @classmethod
     def from_dict(cls, row: dict[str, Any], defaults: dict[str, Any] | None = None) -> "ExperimentSpec":
@@ -90,6 +91,7 @@ class ExperimentSpec:
             "enable_semantic_text_cache": self.enable_semantic_text_cache,
             "enable_exact_text_cache": self.enable_exact_text_cache,
             "preset": self.preset or "",
+            "cache_max_size_gb": self.cache_max_size_gb if self.cache_max_size_gb is not None else "",
         }
 
 

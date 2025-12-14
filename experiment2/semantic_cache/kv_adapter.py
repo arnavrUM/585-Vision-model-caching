@@ -6,6 +6,7 @@ from typing import Any, Callable
 
 import torch
 from vllm.platforms import current_platform
+from vllm.v1.request import RequestStatus
 
 from .kv_protocols import KVChunk
 
@@ -150,10 +151,17 @@ class VLLMEngineAdapter:
         blocks = kv_manager.get_blocks(request_id)
         block_groups = blocks.get_block_ids(allow_none=True)
         if not block_groups:
+            block_groups = self._ensure_request_blocks(request_id, len(chunk.block_ids))
+        if not block_groups:
+            print(f"[warn] inject skipped: no block group yet for request {request_id}")
             return False
         dst_block_ids = list(block_groups[0])
         needed = len(chunk.block_ids)
         if len(dst_block_ids) < needed:
+            print(
+                f"[warn] inject skipped: request {request_id} has only {len(dst_block_ids)} blocks, "
+                f"needs {needed}"
+            )
             return False
         target_block_ids = dst_block_ids[:needed]
 
@@ -171,6 +179,26 @@ class VLLMEngineAdapter:
             )
             platform.insert_blocks_to_device(cached, tensor, src_index, dst_index)
         return True
+
+    # ----------------------------------------------------------------- helpers
+    def _ensure_request_blocks(self, request_id: str, num_blocks: int):
+        """Allocate placeholder blocks so injection can proceed before scheduling."""
+        kv_manager = getattr(self.scheduler, "kv_cache_manager", None)
+        if kv_manager is None:
+            return []
+        request = self.scheduler.requests.get(request_id)
+        if request is None:
+            return []
+        coordinator = kv_manager.coordinator
+        if coordinator is None:
+            return []
+        for manager in coordinator.single_type_managers:
+            existing = manager.req_to_blocks.get(request_id) or []
+            missing = max(0, num_blocks - len(existing))
+            if missing > 0:
+                tokens_needed = num_blocks * manager.block_size
+                manager.allocate_new_blocks(request_id, tokens_needed)
+        return kv_manager.get_block_ids(request_id)
 
     def close(self) -> None:
         scheduler = getattr(self, "scheduler", None)

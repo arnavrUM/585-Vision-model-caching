@@ -28,6 +28,7 @@ class SemanticCacheConfig:
     index_encoder: str = "sentence-transformers/all-MiniLM-L6-v2"
     index_encoder_device: str = "cuda"
     cache_dir: str = "experiment2/kv_chunks"
+    cache_size_limit_bytes: int | None = None
     text_cache_index: str = "text_index.json"
     enable_fusion_cache: bool = False
     fusion_cache_dir: str = "experiment2/fusion_chunks"
@@ -76,7 +77,10 @@ class SemanticCache:
             )
         else:
             self.semantic_text_cache = None
-        self.store = store or KVStore(self.config.cache_dir)
+        self.store = store or KVStore(
+            self.config.cache_dir,
+            max_bytes=self.config.cache_size_limit_bytes,
+        )
         self.exact_cache: ExactTextCache | None = None
         if self.config.enable_exact_text_cache:
             self.exact_cache = ExactTextCache(self.config.cache_dir, self.config.text_cache_index)
@@ -110,6 +114,7 @@ class SemanticCache:
             return True
         stored = self.store.load(match.chunk_id)
         if stored is None:
+            print(f"[warn] semantic cache inject skipped: stored chunk {match.chunk_id} missing on disk")
             return False
         try:
             injected = self.adapter.inject(request_id, stored)
