@@ -146,16 +146,20 @@ class VLLMEngineAdapter:
     def inject(self, request_id: str, chunk: KVChunk) -> bool:
         kv_manager = getattr(self.scheduler, "kv_cache_manager", None)
         if kv_manager is None:
+            print(f"[DEBUG] inject: kv_cache_manager is None")
             raise RuntimeError("Scheduler has no kv_cache_manager.")
         blocks = kv_manager.get_blocks(request_id)
         block_groups = blocks.get_block_ids(allow_none=True)
         if not block_groups:
+            print(f"[DEBUG] inject: No block_groups for request_id={request_id}, chunk_id={chunk.chunk_id}, needed_blocks={len(chunk.block_ids)}")
             return False
         dst_block_ids = list(block_groups[0])
         needed = len(chunk.block_ids)
         if len(dst_block_ids) < needed:
+            print(f"[DEBUG] inject: Not enough blocks for request_id={request_id}, chunk_id={chunk.chunk_id}, needed={needed}, available={len(dst_block_ids)}")
             return False
         target_block_ids = dst_block_ids[:needed]
+        print(f"[DEBUG] inject: SUCCESS for request_id={request_id}, chunk_id={chunk.chunk_id}, injecting {needed} blocks")
 
         platform = current_platform
         available_layers = self._layer_kv_map()

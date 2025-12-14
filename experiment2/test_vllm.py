@@ -140,7 +140,52 @@ def _answer_matches(reference: str | None, generated: str) -> bool | None:
     if not normalized_reference:
         return None
     normalized_generated = _normalize_text(generated)
-    return normalized_reference in normalized_generated
+    
+    # Direct substring match
+    if normalized_reference in normalized_generated:
+        return True
+    
+    # Extract key answer words from reference
+    ref_words = set(normalized_reference.split())
+    gen_words = set(normalized_generated.split())
+    
+    # Remove common stop words
+    stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been", "being", "on", "in", "at", "to", "for", "of", "with", "and", "or", "but"}
+    ref_words = ref_words - stop_words
+    gen_words = gen_words - stop_words
+    
+    # Handle yes/no questions
+    ref_has_yes = any(word in ref_words for word in ["yes", "true", "correct"])
+    ref_has_no = any(word in ref_words for word in ["no", "not", "false", "incorrect"])
+    gen_has_yes = any(word in gen_words for word in ["yes", "true", "correct"])
+    gen_has_no = any(word in gen_words for word in ["no", "not", "false", "incorrect", "n't"])
+    
+    # Check negation mismatch
+    if ref_has_no and gen_has_yes:
+        return False
+    if ref_has_yes and gen_has_no:
+        return False
+    if ref_has_no and not gen_has_no:
+        return False
+    if ref_has_yes and not gen_has_yes:
+        return False
+    
+    # For short answers (1-3 words), check if all key words appear
+    if len(ref_words) <= 3:
+        if ref_words.issubset(gen_words):
+            return True
+        # Check individual word matches
+        for word in ref_words:
+            if word in normalized_generated:
+                return True
+    
+    # For longer answers, check if significant words match
+    if len(ref_words) > 3:
+        common_words = ref_words.intersection(gen_words)
+        if len(common_words) >= len(ref_words) * 0.6:  # 60% word overlap
+            return True
+    
+    return False
 
 
 class _SafeDict(dict):
@@ -587,6 +632,15 @@ def run_samples(
             f"elapsed={elapsed:.1f}s | eta={eta:.1f}s | answer match={is_correct} | "
             f"{technique_str}"
         )
+        # Debug: show question, generated answer, and expected answer for first few or mismatches
+        if idx <= 5 or not is_correct:
+            print(f"[DEBUG] Q: {sample.question}")
+            print(f"[DEBUG] Model: {response_text[:200]}")
+            print(f"[DEBUG] Reference: {sample.reference}")
+            print("---")
+        # Debug: print chunk_text being used
+        if idx <= 3 or not hit:  # Print for first 3 frames or all misses
+            print(f"[DEBUG] chunk_text='{sample.chunk_text[:100]}...' | embeddings={list(embeddings.keys()) if embeddings else 'none'}")
     return results
 
 

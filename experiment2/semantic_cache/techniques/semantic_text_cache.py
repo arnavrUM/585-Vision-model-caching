@@ -87,11 +87,14 @@ class SemanticTextCache:
 
     def search(self, text: str, k: int = 1) -> SemanticTextMatch | None:
         if len(self.ids) == 0:
+            print(f"[DEBUG] semantic_text_cache: empty cache (0 entries)")
             return None
         vec = self._encode(text)
         scores, indices = self.index.search(vec, k)
         best_score = float(scores[0][0])
         best_idx = int(indices[0][0])
         if best_idx < 0 or best_idx >= len(self.ids):
+            print(f"[DEBUG] semantic_text_cache: invalid index {best_idx} (total: {len(self.ids)})")
             return None
+        print(f"[DEBUG] semantic_text_cache: found match with score={best_score:.4f} (cache size: {len(self.ids)})")
         return SemanticTextMatch(chunk_id=self.ids[best_idx], score=best_score)

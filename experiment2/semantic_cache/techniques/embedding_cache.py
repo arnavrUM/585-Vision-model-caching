@@ -48,6 +48,7 @@ class _EmbeddingLayerIndex:
 
     def search(self, embedding: np.ndarray) -> EmbeddingMatch | None:
         if len(self.ids) == 0:
+            print(f"[DEBUG] embedding:{self.config.name}: empty cache (0 entries)")
             return None
         vector = np.asarray(embedding, dtype="float32").reshape(1, -1)
         if vector.shape[1] != self.config.dim:
@@ -60,7 +61,10 @@ class _EmbeddingLayerIndex:
         score = float(scores[0][0])
         idx = int(indices[0][0])
         if idx < 0 or idx >= len(self.ids):
+            print(f"[DEBUG] embedding:{self.config.name}: invalid index {idx} (total: {len(self.ids)})")
             return None
+        # Print similarity score even if below threshold
+        print(f"[DEBUG] embedding:{self.config.name}: score={score:.4f} (threshold={self.config.similarity_threshold:.4f})")
         if score < self.config.similarity_threshold:
             return None
         return EmbeddingMatch(layer=self.config.name, chunk_id=self.ids[idx], score=score)

@@ -1,0 +1,502 @@
+[2025-12-11 06:20:18] INFO loader.py:120: Loading faiss with AVX512 support.
+[2025-12-11 06:20:18] INFO loader.py:122: Successfully loaded faiss with AVX512 support.
+[info] cache_dir resolved to /workspace/experiment2/kv_chunks
+[info] fusion_cache_dir resolved to /workspace/experiment2/fusion_chunks
+Loaded 64 prompts from Video Frames (video_frames_dataset.json).
+Chunk-key uniqueness: 3 unique keys / 64 prompts (100.0% reused >=2x)
+Most frequent chunk keys:
+- occurrences=48: Is the cap on the bottle?
+- occurrences=11: What is in this frame?
+- occurrences=5: Is a hand visible in this frame?
+INFO 12-11 06:20:18 [utils.py:253] non-default args: {'trust_remote_code': True, 'seed': None, 'max_model_len': 4096, 'model': 'Qwen/Qwen3-VL-4B-Instruct'}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+WARNING 12-11 06:20:18 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+WARNING 12-11 06:20:18 [arg_utils.py:1183] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 12-11 06:20:19 [model.py:637] Resolved architecture: Qwen3VLForConditionalGeneration
+INFO 12-11 06:20:19 [model.py:1750] Using max model len 4096
+INFO 12-11 06:20:19 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 12-11 06:20:22 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='Qwen/Qwen3-VL-4B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen3-VL-4B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=Qwen/Qwen3-VL-4B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+INFO 12-11 06:20:23 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.16.96.2:42523 backend=nccl
+INFO 12-11 06:20:23 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 12-11 06:20:31 [gpu_model_runner.py:3467] Starting to load model Qwen/Qwen3-VL-4B-Instruct...
+INFO 12-11 06:20:31 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:00<00:00,  1.27it/s]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.07it/s]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.10it/s]
+
+INFO 12-11 06:20:34 [default_loader.py:308] Loading weights took 1.98 seconds
+INFO 12-11 06:20:35 [gpu_model_runner.py:3549] Model loading took 8.6794 GiB memory and 2.888203 seconds
+INFO 12-11 06:20:35 [gpu_model_runner.py:4306] Encoder cache will be initialized with a budget of 151250 tokens, and profiled with 1 video items of the maximum feature size.
+INFO 12-11 06:20:49 [backends.py:655] Using cache directory: /root/.cache/vllm/torch_compile_cache/1ec5e0b347/rank_0_0/backbone for vLLM's torch.compile
+INFO 12-11 06:20:49 [backends.py:715] Dynamo bytecode transform time: 8.83 s
+INFO 12-11 06:20:54 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.793 s
+INFO 12-11 06:20:55 [monitor.py:34] torch.compile takes 12.62 s in total
+INFO 12-11 06:20:57 [gpu_worker.py:359] Available KV cache memory: 26.51 GiB
+INFO 12-11 06:20:57 [kv_cache_utils.py:1286] GPU KV cache size: 193,008 tokens
+INFO 12-11 06:20:57 [kv_cache_utils.py:1291] Maximum concurrency for 4,096 tokens per request: 47.12x
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:03, 14.53it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:03, 14.93it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:02, 15.31it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:02, 15.27it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:00<00:02, 15.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:00<00:02, 14.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:00<00:02, 14.75it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:01<00:02, 15.19it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 19/51 [00:01<00:01, 16.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:01<00:01, 18.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▉     | 25/51 [00:01<00:01, 18.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  53%|█████▎    | 27/51 [00:01<00:01, 18.89it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 29/51 [00:01<00:01, 19.12it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 32/51 [00:01<00:00, 19.43it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:01<00:00, 19.34it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  73%|███████▎  | 37/51 [00:02<00:00, 19.58it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:02<00:00, 19.99it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  84%|████████▍ | 43/51 [00:02<00:00, 20.23it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:02<00:00, 20.12it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  96%|█████████▌| 49/51 [00:02<00:00, 20.52it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:02<00:00, 18.13it/s]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   6%|▌         | 2/35 [00:00<00:01, 16.58it/s]Capturing CUDA graphs (decode, FULL):  11%|█▏        | 4/35 [00:00<00:01, 17.93it/s]Capturing CUDA graphs (decode, FULL):  17%|█▋        | 6/35 [00:00<00:01, 18.79it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:01, 19.21it/s]Capturing CUDA graphs (decode, FULL):  31%|███▏      | 11/35 [00:00<00:01, 19.86it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:00<00:01, 20.27it/s]Capturing CUDA graphs (decode, FULL):  49%|████▊     | 17/35 [00:00<00:00, 20.66it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:00<00:00, 20.79it/s]Capturing CUDA graphs (decode, FULL):  66%|██████▌   | 23/35 [00:01<00:00, 21.21it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:01<00:00, 22.07it/s]Capturing CUDA graphs (decode, FULL):  83%|████████▎ | 29/35 [00:01<00:00, 22.06it/s]Capturing CUDA graphs (decode, FULL):  91%|█████████▏| 32/35 [00:01<00:00, 21.51it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 21.81it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 20.90it/s]
+INFO 12-11 06:21:02 [gpu_model_runner.py:4466] Graph capturing finished in 5 secs, took 0.71 GiB
+INFO 12-11 06:21:02 [core.py:254] init engine (profile, create kv cache, warmup model) took 27.89 seconds
+INFO 12-11 06:21:04 [llm.py:343] Supported tasks: ('generate',)
+[2025-12-11 06:21:04] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+[DEBUG] SemanticCache.__init__: cache_dir=/workspace/experiment2/kv_chunks, exact_cache enabled=True
+[DEBUG] ExactTextCache created: index_path=/workspace/experiment2/kv_chunks/text_index.json, existing_entries=2
+[2025-12-11 06:21:06] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+[2025-12-11 06:21:09] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: clip-ViT-B-32
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 46.96it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.41it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.40it/s]
+[DEBUG] inject: No block_groups for request_id=074af555be9442909cb8a33e41f0b90b, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0011] 1/64 | hit (text:exact) | latency=0.501s | elapsed=0.8s | eta=47.8s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=['prompt', 'vision']
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.81it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 20.76it/s]
+[DEBUG] inject: No block_groups for request_id=e6a3a1f23e4b4881adf176bd302a63b2, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0021] 2/64 | hit (text:exact) | latency=0.197s | elapsed=1.1s | eta=35.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is on the bottle.
+---
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=['prompt', 'vision']
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.54it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.49it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.48it/s]
+[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
+[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
+[DEBUG] embedding:prompt: empty cache (0 entries)
+[DEBUG] embedding:vision: empty cache (0 entries)
+[DEBUG] semantic_text_cache: empty cache (0 entries)
+[DEBUG] semantic_text: no match found for chunk_text='Is a hand visible in this frame?...'
+[DEBUG] add_observation: Capturing chunk_id=3d776508055c404e8a63d317f9348d19 for chunk_text='Is a hand visible in this frame?...'
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.16it/s]
+[DEBUG] _record_chunk: Added to semantic_text_cache, chunk_id=3d776508055c404e8a63d317f9348d19, chunk_text='Is a hand visible in this frame?...', cache_size=1
+[DEBUG] ExactTextCache.record: Saved chunk_id=3d776508055c404e8a63d317f9348d19 for normalized='is a hand visible in this frame?...', total_entries_for_this_text=1, total_normalized_texts=3
+[DEBUG] _record_chunk: Added to exact_cache, chunk_id=3d776508055c404e8a63d317f9348d19, normalized='is a hand visible in this frame?...', total_candidates_for_this_text=1
+[DEBUG] add_observation: Added embeddings to embedding_cache for chunk_id=3d776508055c404e8a63d317f9348d19, layers=['prompt', 'vision']
+[unscrew_bottle_cap_frame_0013] 3/64 | miss (none) | latency=0.380s | elapsed=1.7s | eta=35.0s | answer match=True | embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
+[DEBUG] Q: Is a hand visible in this frame?
+[DEBUG] Model: No, there is no hand visible in this frame.
+[DEBUG] Reference: There is a hand in the frame.
+---
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=['prompt', 'vision']
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 113.88it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  3.84it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  3.84it/s]
+[DEBUG] inject: No block_groups for request_id=6c8eea0db2b24149aa3bb73de799f9f2, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0032] 4/64 | hit (text:exact) | latency=0.200s | elapsed=2.3s | eta=33.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is on the bottle.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.93it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 19.22it/s]
+[DEBUG] inject: No block_groups for request_id=791c4de24e8c43dab2bd9082385492e1, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0051] 5/64 | hit (text:exact) | latency=0.200s | elapsed=2.7s | eta=31.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is not on the bottle.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.10it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 19.97it/s]
+[DEBUG] inject: No block_groups for request_id=c8140bbcc1d14d52bf97d0cb390da748, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0056] 6/64 | hit (text:exact) | latency=0.198s | elapsed=3.0s | eta=29.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 143.40it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.56it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.55it/s]
+[DEBUG] inject: No block_groups for request_id=260dcc5f3abc436186b19bcfd6c18e9c, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0020] 7/64 | hit (text:exact) | latency=0.199s | elapsed=3.5s | eta=28.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 148.59it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 19.69it/s]
+[DEBUG] inject: No block_groups for request_id=f84bf0cfecfc494b80f356adb9e5188f, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0057] 8/64 | hit (text:exact) | latency=0.260s | elapsed=3.8s | eta=26.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.76it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.07it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.06it/s]
+[DEBUG] inject: No block_groups for request_id=ef633fb646f1472aa30f0c472cefb395, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0044] 9/64 | hit (text:exact) | latency=0.199s | elapsed=4.3s | eta=26.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 98.80it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 19.39it/s]
+[DEBUG] inject: No block_groups for request_id=07e1c7b28e9343469097c57c28c3b2e5, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0046] 10/64 | hit (text:exact) | latency=0.195s | elapsed=4.6s | eta=25.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.91it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.43it/s]
+[DEBUG] inject: No block_groups for request_id=df8b4f53d7a047fc8adc86efb004f73e, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0001] 11/64 | hit (text:exact) | latency=0.567s | elapsed=5.4s | eta=26.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 111.72it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.77it/s]
+[DEBUG] inject: No block_groups for request_id=98ac848dc0af455fb095d4cc6ce3c902, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0022] 12/64 | hit (text:exact) | latency=0.193s | elapsed=5.8s | eta=25.3s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 107.05it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.05it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.04it/s]
+[DEBUG] inject: No block_groups for request_id=f883c95b1edf4790a2eb8bc4d220d1f8, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0002] 13/64 | hit (text:exact) | latency=0.557s | elapsed=6.6s | eta=26.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 44.63it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 14.01it/s]
+[DEBUG] inject: No block_groups for request_id=62dbef74986e4e06a530aba8b84dcfd7, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0017] 14/64 | hit (text:exact) | latency=0.193s | elapsed=7.0s | eta=25.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.37it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.31it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.30it/s]
+[DEBUG] inject: No block_groups for request_id=4fd6a99ee0b34ee7b72a403a5d498968, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0009] 15/64 | hit (text:exact) | latency=0.529s | elapsed=7.8s | eta=25.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 116.30it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.64it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.64it/s]
+[DEBUG] inject: No block_groups for request_id=eccf7990ddb84424944880b52f337211, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0023] 16/64 | hit (text:exact) | latency=0.192s | elapsed=8.3s | eta=25.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 148.67it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 14.03it/s]
+[DEBUG] inject: No block_groups for request_id=1b7876e9ad1a442a91be3f24c8692a0e, chunk_id=3d776508055c404e8a63d317f9348d19, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0012] 17/64 | hit (text:exact) | latency=0.210s | elapsed=8.8s | eta=24.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 139.17it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.16it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.14it/s]
+[DEBUG] inject: No block_groups for request_id=60b3e640eeec41b79817fce461ea828e, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0055] 18/64 | hit (text:exact) | latency=0.193s | elapsed=9.1s | eta=23.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.72it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.51it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.50it/s]
+[DEBUG] inject: No block_groups for request_id=5e034f74808748a0a76d5ff4a816b83b, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0054] 19/64 | hit (text:exact) | latency=0.255s | elapsed=9.6s | eta=22.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.27it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.61it/s]
+[DEBUG] inject: No block_groups for request_id=35d9d7042fb64ad5ad25400e31e07bd1, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0043] 20/64 | hit (text:exact) | latency=0.192s | elapsed=10.0s | eta=22.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.50it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
+[DEBUG] inject: No block_groups for request_id=d92a2e8da67342eb93ffce7ad5f6be11, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+INFO 12-11 06:21:21 [loggers.py:236] Engine 000: Avg prompt throughput: 47.5 tokens/s, Avg generation throughput: 17.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 39.2%, MM cache hit rate: 0.0%
+[unscrew_bottle_cap_frame_0025] 21/64 | hit (text:exact) | latency=0.195s | elapsed=10.4s | eta=21.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 119.83it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.68it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.68it/s]
+[DEBUG] inject: No block_groups for request_id=b74016f0eec0450abc5354ece846f180, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0030] 22/64 | hit (text:exact) | latency=0.220s | elapsed=10.9s | eta=20.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 82.31it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.37it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.35it/s]
+[DEBUG] inject: No block_groups for request_id=27ab1a1b98d34657a1938c4ee3bbe654, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0019] 23/64 | hit (text:exact) | latency=0.261s | elapsed=11.3s | eta=20.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.16it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.94it/s]
+[DEBUG] inject: No block_groups for request_id=ed66f59d78bd44019fb754fc39317552, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0034] 24/64 | hit (text:exact) | latency=0.197s | elapsed=11.7s | eta=19.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 119.18it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.06it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.05it/s]
+[DEBUG] inject: No block_groups for request_id=8034b362bcf34216a35957598646ae49, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0031] 25/64 | hit (text:exact) | latency=0.192s | elapsed=12.1s | eta=18.9s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 129.35it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.89it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.88it/s]
+[DEBUG] inject: No block_groups for request_id=f9654fa34a014de293526cf1a297ebc5, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0029] 26/64 | hit (text:exact) | latency=0.193s | elapsed=12.5s | eta=18.3s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.90it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.63it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.61it/s]
+[DEBUG] inject: No block_groups for request_id=9b2b8880b36e42d2aac082d583ca8ce2, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0050] 27/64 | hit (text:exact) | latency=0.202s | elapsed=13.0s | eta=17.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.51it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.66it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.65it/s]
+[DEBUG] inject: No block_groups for request_id=6eaf27ccc0bc48a2ab6fa34e66e0be83, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0062] 28/64 | hit (text:exact) | latency=0.193s | elapsed=13.3s | eta=17.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.97it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.67it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.66it/s]
+[DEBUG] inject: No block_groups for request_id=d1348f1d819c4ba88fe5fcb0c611a89c, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0045] 29/64 | hit (text:exact) | latency=0.253s | elapsed=13.8s | eta=16.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.65it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.43it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.43it/s]
+[DEBUG] inject: No block_groups for request_id=ef31e9e3c96e4f23a8c532d90046f9c7, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0041] 30/64 | hit (text:exact) | latency=0.195s | elapsed=14.3s | eta=16.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 142.38it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.18it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.17it/s]
+[DEBUG] inject: No block_groups for request_id=36aa8a3ba17f428c8e363467e27c8b20, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0018] 31/64 | hit (text:exact) | latency=0.192s | elapsed=14.6s | eta=15.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.17it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.08it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.07it/s]
+[DEBUG] inject: No block_groups for request_id=206e6b02d24b474fb27034268495b603, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0049] 32/64 | hit (text:exact) | latency=0.192s | elapsed=15.1s | eta=15.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.47it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.28it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.28it/s]
+[DEBUG] inject: No block_groups for request_id=fed9983a77834b368323f3effad0cc83, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0039] 33/64 | hit (text:exact) | latency=0.192s | elapsed=15.5s | eta=14.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.53it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.75it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.74it/s]
+[DEBUG] inject: No block_groups for request_id=9a266d627773452084f37a5e7290e14f, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0060] 34/64 | hit (text:exact) | latency=0.195s | elapsed=16.0s | eta=14.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.14it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.01it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.01it/s]
+[DEBUG] inject: No block_groups for request_id=866b8dc0caae468fb6dac70324e5f235, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0063] 35/64 | hit (text:exact) | latency=0.195s | elapsed=16.4s | eta=13.5s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 140.32it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.74it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.73it/s]
+[DEBUG] inject: No block_groups for request_id=83c73db75eb54bfca8cdef08743030a6, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0040] 36/64 | hit (text:exact) | latency=0.192s | elapsed=16.8s | eta=13.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.79it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.95it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.94it/s]
+[DEBUG] inject: No block_groups for request_id=8b342abf360b492e853e061334751bc6, chunk_id=3d776508055c404e8a63d317f9348d19, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0015] 37/64 | hit (text:exact) | latency=0.211s | elapsed=17.2s | eta=12.5s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 124.99it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.44it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.43it/s]
+[DEBUG] inject: No block_groups for request_id=11b97aafbade4c5c8f46b2664e9125a8, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0008] 38/64 | hit (text:exact) | latency=0.487s | elapsed=17.8s | eta=12.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 117.15it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.48it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.47it/s]
+[DEBUG] inject: No block_groups for request_id=a7a74eeebc9a42cb907963bfd584e684, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0037] 39/64 | hit (text:exact) | latency=0.219s | elapsed=18.3s | eta=11.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.80it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.95it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.94it/s]
+[DEBUG] inject: No block_groups for request_id=6c895c6903ef4358aead9d267a58296f, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0052] 40/64 | hit (text:exact) | latency=0.193s | elapsed=18.7s | eta=11.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.23it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.36it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.35it/s]
+[DEBUG] inject: No block_groups for request_id=a24ea6a655324764af7ddd3244b6d48f, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0047] 41/64 | hit (text:exact) | latency=0.221s | elapsed=19.2s | eta=10.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 131.88it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.39it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.38it/s]
+[DEBUG] inject: No block_groups for request_id=43d27165f1f0491e93f97fad4a742d2e, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0036] 42/64 | hit (text:exact) | latency=0.195s | elapsed=19.6s | eta=10.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.60it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.08it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.08it/s]
+[DEBUG] inject: No block_groups for request_id=e592c74178b645878af355c094e2cbff, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0048] 43/64 | hit (text:exact) | latency=0.194s | elapsed=20.0s | eta=9.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.85it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.79it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.78it/s]
+[DEBUG] inject: No block_groups for request_id=cf61e09a56c34a93a326eff48aaa8db0, chunk_id=3d776508055c404e8a63d317f9348d19, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
+INFO 12-11 06:21:31 [loggers.py:236] Engine 000: Avg prompt throughput: 89.8 tokens/s, Avg generation throughput: 27.1 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.1%, MM cache hit rate: 0.0%
+[unscrew_bottle_cap_frame_0016] 44/64 | hit (text:exact) | latency=0.210s | elapsed=20.5s | eta=9.3s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.67it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.48it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.47it/s]
+[DEBUG] inject: No block_groups for request_id=b2adeb66b9b447eebcf2c71c314ccb5f, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0058] 45/64 | hit (text:exact) | latency=0.193s | elapsed=20.8s | eta=8.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 134.88it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.89it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.88it/s]
+[DEBUG] inject: No block_groups for request_id=1b72a0fb07554dfcbb571b75968b7b97, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0027] 46/64 | hit (text:exact) | latency=0.194s | elapsed=21.2s | eta=8.3s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 131.91it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.89it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.88it/s]
+[DEBUG] inject: No block_groups for request_id=f13905af055941868d84e7a17f067f5c, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0028] 47/64 | hit (text:exact) | latency=0.206s | elapsed=21.7s | eta=7.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.06it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.06it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.05it/s]
+[DEBUG] inject: No block_groups for request_id=6fd3a16e21bd4d5ca8caf2656576a975, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0006] 48/64 | hit (text:exact) | latency=0.487s | elapsed=22.4s | eta=7.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.90it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.45it/s]
+[DEBUG] inject: No block_groups for request_id=3068f108f06d4c8aa684f49e1e8c0810, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0003] 49/64 | hit (text:exact) | latency=0.486s | elapsed=23.1s | eta=7.1s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 118.41it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.13it/s]
+[DEBUG] inject: No block_groups for request_id=a1acafa9128b42ba91ae083575156362, chunk_id=3d776508055c404e8a63d317f9348d19, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0014] 50/64 | hit (text:exact) | latency=0.211s | elapsed=23.6s | eta=6.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.93it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.07it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.06it/s]
+[DEBUG] inject: No block_groups for request_id=67de5f90bfea4ff186eadbc5eca4f9d7, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0033] 51/64 | hit (text:exact) | latency=0.238s | elapsed=24.0s | eta=6.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.16it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.75it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.10it/s]
+[DEBUG] inject: No block_groups for request_id=e11212ffae974f1fb41d11ad1b95e225, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0059] 52/64 | hit (text:exact) | latency=0.195s | elapsed=24.4s | eta=5.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 134.59it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 16.30it/s]
+[DEBUG] inject: No block_groups for request_id=665ee52d9777471ea55b597ba2eb92ef, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0038] 53/64 | hit (text:exact) | latency=0.194s | elapsed=24.8s | eta=5.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 131.81it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.38it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.37it/s]
+[DEBUG] inject: No block_groups for request_id=2deba90ca0a045539076a2fcb828043b, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0024] 54/64 | hit (text:exact) | latency=0.205s | elapsed=25.3s | eta=4.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.27it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.33it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.32it/s]
+[DEBUG] inject: No block_groups for request_id=bdca55352b7e4271ab75916356cafa3c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0007] 55/64 | hit (text:exact) | latency=0.486s | elapsed=25.9s | eta=4.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 119.19it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.06it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.05it/s]
+[DEBUG] inject: No block_groups for request_id=9899e9ad646e467f8e707bcd908c65bd, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0035] 56/64 | hit (text:exact) | latency=0.193s | elapsed=26.4s | eta=3.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.61it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.80it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.79it/s]
+[DEBUG] inject: No block_groups for request_id=8c3f094f14094f6ab2b06956188667f2, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0053] 57/64 | hit (text:exact) | latency=0.194s | elapsed=26.9s | eta=3.3s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.75it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.24it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.23it/s]
+[DEBUG] inject: No block_groups for request_id=f0645ab7820c483a82d42706075fa883, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0005] 58/64 | hit (text:exact) | latency=0.485s | elapsed=27.7s | eta=2.9s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.75it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.08it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.07it/s]
+[DEBUG] inject: No block_groups for request_id=aa9bf6dac6f748e9bc7fe550c343194c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0004] 59/64 | hit (text:exact) | latency=0.488s | elapsed=28.3s | eta=2.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.27it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.67it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.67it/s]
+[DEBUG] inject: No block_groups for request_id=775242d8082a40eb8e9d955df984b900, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0064] 60/64 | hit (text:exact) | latency=0.202s | elapsed=28.8s | eta=1.9s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 144.24it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 19.49it/s]
+[DEBUG] inject: No block_groups for request_id=b25c52f0ea834623935e5978749285fd, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0026] 61/64 | hit (text:exact) | latency=0.194s | elapsed=29.1s | eta=1.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.12it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.57it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.56it/s]
+[DEBUG] inject: No block_groups for request_id=c8fa9626c75d47918094eddd9affdf51, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
+[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0010] 62/64 | hit (text:exact) | latency=0.490s | elapsed=29.8s | eta=1.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 112.26it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.91it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.91it/s]
+[DEBUG] inject: No block_groups for request_id=7197348695874e4d812dbf642f500201, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+INFO 12-11 06:21:41 [loggers.py:236] Engine 000: Avg prompt throughput: 73.6 tokens/s, Avg generation throughput: 32.1 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.5%, MM cache hit rate: 0.0%
+[unscrew_bottle_cap_frame_0061] 63/64 | hit (text:exact) | latency=0.249s | elapsed=30.3s | eta=0.5s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 120.01it/s]
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.36it/s]
+[DEBUG] inject: No block_groups for request_id=502461a25d5a4d7f939842794ff8f9eb, chunk_id=54ee8a4be49f48179c6f445c8a1d15cc, needed_blocks=4
+[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
+[unscrew_bottle_cap_frame_0042] 64/64 | hit (text:exact) | latency=0.236s | elapsed=30.7s | eta=0.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+
+=== Experiment summary ===
+Total prompts: 64
+Cache hits: 63 (98.4%)
+Cache misses: 1 (1.6%)
+Average latency: 0.260s
+Average latency (hit): 0.258s
+Average latency (miss): 0.380s
+Answer match rate: 82.8% (n=64)
+Hit rate by cache:
+  - text:exact: 63 hits (98.4% of prompts) | avg latency=0.258s
+Technique breakdown:
+  - embedding:prompt: hit=0, miss=1, skip=63
+  - embedding:vision: hit=0, miss=1, skip=63
+  - exact_text: hit=63, miss=1, skip=0
+  - kv_cache: hit=0, miss=64, skip=0
+  - semantic_text: hit=0, miss=1, skip=63
+Detailed results saved to experiment2/experiment_logs/20251211-062141-video_frames-question-Qwen-Qwen3-VL-4B-Instruct.csv
+
+=== vLLM prefix/KV cache metrics ===
+- vllm:kv_cache_usage_perc [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0.0
+- vllm:prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 2490
+- vllm:prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 1008
+- vllm:external_prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
+- vllm:external_prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
+
+=== Sample outputs ===
+ID=unscrew_bottle_cap_frame_0011 | img=output_0011 | hit (text:exact) | latency=0.501s
+Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Q: What is in this frame?
+Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+Reference: A bottle and a laptop on a table.
+---
+ID=unscrew_bottle_cap_frame_0021 | img=output_0021 | hit (text:exact) | latency=0.197s
+Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is on the bottle.
+---
+ID=unscrew_bottle_cap_frame_0013 | img=output_0013 | miss (none) | latency=0.380s
+Techniques: embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
+Q: Is a hand visible in this frame?
+Model: No, there is no hand visible in this frame.
+Reference: There is a hand in the frame.
+---
+ID=unscrew_bottle_cap_frame_0032 | img=output_0032 | hit (text:exact) | latency=0.200s
+Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is on the bottle.
+---
+ID=unscrew_bottle_cap_frame_0051 | img=output_0051 | hit (text:exact) | latency=0.200s
+Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is not on the bottle.
+---
+[rank0]:[W1211 06:21:42.848388639 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

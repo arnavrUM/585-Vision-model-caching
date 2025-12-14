@@ -1,0 +1,355 @@
+[2025-12-11 06:15:20] INFO loader.py:120: Loading faiss with AVX512 support.
+[2025-12-11 06:15:20] INFO loader.py:122: Successfully loaded faiss with AVX512 support.
+[info] cache_dir resolved to /workspace/experiment2/kv_chunks
+[info] fusion_cache_dir resolved to /workspace/experiment2/fusion_chunks
+Loaded 64 prompts from Video Frames (video_frames_dataset.json).
+Chunk-key uniqueness: 3 unique keys / 64 prompts (100.0% reused >=2x)
+Most frequent chunk keys:
+- occurrences=48: Is the cap on the bottle?
+- occurrences=11: What is in this frame?
+- occurrences=5: Is a hand visible in this frame?
+INFO 12-11 06:15:20 [utils.py:253] non-default args: {'trust_remote_code': True, 'seed': None, 'max_model_len': 4096, 'model': 'Qwen/Qwen3-VL-4B-Instruct'}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+WARNING 12-11 06:15:20 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
+WARNING 12-11 06:15:20 [arg_utils.py:1183] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 12-11 06:15:21 [model.py:637] Resolved architecture: Qwen3VLForConditionalGeneration
+INFO 12-11 06:15:21 [model.py:1750] Using max model len 4096
+INFO 12-11 06:15:21 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 12-11 06:15:25 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='Qwen/Qwen3-VL-4B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen3-VL-4B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=Qwen/Qwen3-VL-4B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
+INFO 12-11 06:15:26 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.16.96.2:35073 backend=nccl
+INFO 12-11 06:15:26 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
+INFO 12-11 06:15:33 [gpu_model_runner.py:3467] Starting to load model Qwen/Qwen3-VL-4B-Instruct...
+INFO 12-11 06:15:34 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
+INFO 12-11 06:15:53 [weight_utils.py:487] Time spent downloading weights for Qwen/Qwen3-VL-4B-Instruct: 18.799488 seconds
+Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:00<00:00,  1.21it/s]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.08it/s]
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.10it/s]
+
+INFO 12-11 06:15:55 [default_loader.py:308] Loading weights took 1.96 seconds
+INFO 12-11 06:15:56 [gpu_model_runner.py:3549] Model loading took 8.6794 GiB memory and 21.543470 seconds
+INFO 12-11 06:15:56 [gpu_model_runner.py:4306] Encoder cache will be initialized with a budget of 151250 tokens, and profiled with 1 video items of the maximum feature size.
+INFO 12-11 06:16:10 [backends.py:655] Using cache directory: /root/.cache/vllm/torch_compile_cache/1ec5e0b347/rank_0_0/backbone for vLLM's torch.compile
+INFO 12-11 06:16:10 [backends.py:715] Dynamo bytecode transform time: 8.22 s
+[rank0]:W1211 06:16:12.489000 155019 site-packages/torch/_inductor/codegen/triton_combo_kernel.py:97] [0/0] ComboKernels: 1 long reduction nodes are separated
+[rank0]:W1211 06:16:12.866000 155019 site-packages/torch/_inductor/codegen/triton_combo_kernel.py:97] [0/0] ComboKernels: 1 long reduction nodes are separated
+INFO 12-11 06:16:13 [backends.py:257] Cache the graph for dynamic shape for later use
+INFO 12-11 06:16:43 [backends.py:288] Compiling a graph for dynamic shape takes 32.63 s
+INFO 12-11 06:16:45 [monitor.py:34] torch.compile takes 40.85 s in total
+INFO 12-11 06:16:47 [gpu_worker.py:359] Available KV cache memory: 26.51 GiB
+INFO 12-11 06:16:47 [kv_cache_utils.py:1286] GPU KV cache size: 193,008 tokens
+INFO 12-11 06:16:47 [kv_cache_utils.py:1291] Maximum concurrency for 4,096 tokens per request: 47.12x
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:03, 14.12it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:03, 14.47it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:03, 14.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:02, 14.78it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:00<00:02, 15.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:00<00:02, 15.24it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:00<00:02, 15.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:01<00:02, 15.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 19/51 [00:01<00:01, 17.23it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:01<00:01, 18.22it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▉     | 25/51 [00:01<00:01, 18.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  55%|█████▍    | 28/51 [00:01<00:01, 19.34it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  61%|██████    | 31/51 [00:01<00:01, 19.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:01<00:00, 19.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  73%|███████▎  | 37/51 [00:02<00:00, 20.02it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:02<00:00, 20.43it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  84%|████████▍ | 43/51 [00:02<00:00, 21.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:02<00:00, 21.44it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  96%|█████████▌| 49/51 [00:02<00:00, 22.00it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:02<00:00, 18.71it/s]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   6%|▌         | 2/35 [00:00<00:01, 16.81it/s]Capturing CUDA graphs (decode, FULL):  14%|█▍        | 5/35 [00:00<00:01, 18.97it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:01, 19.75it/s]Capturing CUDA graphs (decode, FULL):  31%|███▏      | 11/35 [00:00<00:01, 20.22it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:00<00:01, 20.64it/s]Capturing CUDA graphs (decode, FULL):  49%|████▊     | 17/35 [00:00<00:00, 21.39it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:00<00:00, 22.02it/s]Capturing CUDA graphs (decode, FULL):  66%|██████▌   | 23/35 [00:01<00:00, 22.93it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:01<00:00, 23.85it/s]Capturing CUDA graphs (decode, FULL):  83%|████████▎ | 29/35 [00:01<00:00, 24.82it/s]Capturing CUDA graphs (decode, FULL):  91%|█████████▏| 32/35 [00:01<00:00, 25.26it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 26.44it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 23.10it/s]
+INFO 12-11 06:16:52 [gpu_model_runner.py:4466] Graph capturing finished in 5 secs, took 0.71 GiB
+INFO 12-11 06:16:52 [core.py:254] init engine (profile, create kv cache, warmup model) took 56.20 seconds
+INFO 12-11 06:16:53 [llm.py:343] Supported tasks: ('generate',)
+[DEBUG] SemanticCache.__init__: cache_dir=/workspace/experiment2/kv_chunks, exact_cache enabled=False
+[DEBUG] add_observation: Capturing chunk_id=958efa048f8a4e0084845e7011384dc7 for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0011] 1/64 | miss (none) | latency=0.535s | elapsed=0.5s | eta=33.8s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=37e964ebb66d40dc8c9063b7ce0bfd2d for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0021] 2/64 | miss (none) | latency=0.295s | elapsed=0.8s | eta=25.8s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is on the bottle.
+---
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=dd6e9f50154047efaea8db2e77adb3fe for chunk_text='Is a hand visible in this frame?...'
+[unscrew_bottle_cap_frame_0013] 3/64 | miss (none) | latency=0.306s | elapsed=1.1s | eta=23.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is a hand visible in this frame?
+[DEBUG] Model: No, there is no hand visible in this frame.
+[DEBUG] Reference: There is a hand in the frame.
+---
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=ac498ac9da73452b932c4ce2ea828aba for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0032] 4/64 | miss (none) | latency=0.275s | elapsed=1.4s | eta=21.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is on the bottle.
+---
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=faa2847f4b584a29a7fa3b65d0903839 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0051] 5/64 | miss (none) | latency=0.274s | elapsed=1.7s | eta=19.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: Is the cap on the bottle?
+[DEBUG] Model: No, the cap is not on the bottle.
+[DEBUG] Reference: The cap is not on the bottle.
+---
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=53eb6a63fb3e4663b58bebf255fc4ad5 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0056] 6/64 | miss (none) | latency=0.308s | elapsed=2.0s | eta=19.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=16738948ba614ae49f71a17a03d3e9f3 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0020] 7/64 | miss (none) | latency=0.292s | elapsed=2.3s | eta=18.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=da6a039d97a24b7a83cc1d1f54c3bbed for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0057] 8/64 | miss (none) | latency=0.305s | elapsed=2.6s | eta=18.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=0f6751c2b67f4a479bbe3f12c599def4 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0044] 9/64 | miss (none) | latency=0.341s | elapsed=2.9s | eta=18.0s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=6e4c1800d6f045929ce6009fd9089ef2 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0046] 10/64 | miss (none) | latency=0.255s | elapsed=3.2s | eta=17.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=10d99de0385c432bb0b2629b2845570d for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0001] 11/64 | miss (none) | latency=0.547s | elapsed=3.7s | eta=18.0s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=0f64f0f2673542c48882a757d59e52d1 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0022] 12/64 | miss (none) | latency=0.269s | elapsed=4.0s | eta=17.4s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=0f3b8d294cdf46c7999498378501fe0b for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0002] 13/64 | miss (none) | latency=0.586s | elapsed=4.6s | eta=18.1s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=5b4ef39f720d4d4fb6d35004abfd2bb7 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0017] 14/64 | miss (none) | latency=0.338s | elapsed=4.9s | eta=17.6s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=a32616d637c843d5b052efd8e7536eab for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0009] 15/64 | miss (none) | latency=0.602s | elapsed=5.5s | eta=18.1s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=89642ba124d54042a21ceeeb0511f192 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0023] 16/64 | miss (none) | latency=0.420s | elapsed=6.0s | eta=17.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=afdc47f28d164bc9b285d3d214c38bc3 for chunk_text='Is a hand visible in this frame?...'
+[unscrew_bottle_cap_frame_0012] 17/64 | miss (none) | latency=0.277s | elapsed=6.2s | eta=17.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=dd707a0a3f604497ba9870092a536f36 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0055] 18/64 | miss (none) | latency=0.312s | elapsed=6.6s | eta=16.8s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=f630d57255c0449bbdda0c5724bd8423 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0054] 19/64 | miss (none) | latency=0.264s | elapsed=6.8s | eta=16.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=cd8ab8106f284c5abf9a9e88b9afb07f for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0043] 20/64 | miss (none) | latency=0.266s | elapsed=7.1s | eta=15.6s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=c3dc9312046d490f81d268cda3023486 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0025] 21/64 | miss (none) | latency=0.251s | elapsed=7.3s | eta=15.0s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=05dbe61aeef84313bd6998b93e159cde for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0030] 22/64 | miss (none) | latency=0.256s | elapsed=7.6s | eta=14.5s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=7b876f5d7d08458db8dafbb435062ace for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0019] 23/64 | miss (none) | latency=0.310s | elapsed=7.9s | eta=14.1s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=274db3b6ef29498fb27073c4e25f998d for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0034] 24/64 | miss (none) | latency=0.288s | elapsed=8.2s | eta=13.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=451ccaf4a0ae4735bf57f8ae479c653f for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0031] 25/64 | miss (none) | latency=0.259s | elapsed=8.5s | eta=13.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=e2bbbe64afe240069d74d4782c8392b0 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0029] 26/64 | miss (none) | latency=0.246s | elapsed=8.7s | eta=12.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=09e4028c46be4556ac91892e00f92c43 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0050] 27/64 | miss (none) | latency=0.271s | elapsed=9.0s | eta=12.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=34cde4fc5c9446539ee1d56ddaff64f1 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0062] 28/64 | miss (none) | latency=0.260s | elapsed=9.2s | eta=11.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=b76a068f0a334a2399bf72f3a151d2ff for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0045] 29/64 | miss (none) | latency=0.391s | elapsed=9.6s | eta=11.6s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=6bf01eacfde046eab73c48badcd7c529 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0041] 30/64 | miss (none) | latency=0.288s | elapsed=9.9s | eta=11.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+INFO 12-11 06:17:03 [loggers.py:236] Engine 000: Avg prompt throughput: 120.3 tokens/s, Avg generation throughput: 40.5 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 39.8%, MM cache hit rate: 0.0%
+[DEBUG] add_observation: Capturing chunk_id=a6d10384ef3144a88eea856813af95d0 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0018] 31/64 | miss (none) | latency=0.295s | elapsed=10.2s | eta=10.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=bc2f39c4676a46a39d2fae52f87bbbc1 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0049] 32/64 | miss (none) | latency=0.291s | elapsed=10.5s | eta=10.5s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=7ad99f6db9324567a561676b579038d0 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0039] 33/64 | miss (none) | latency=0.304s | elapsed=10.8s | eta=10.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=a71926e1a1ce4e068f83918d8683a981 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0060] 34/64 | miss (none) | latency=0.282s | elapsed=11.1s | eta=9.8s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=45676327043349eb9e61768c9b732d5f for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0063] 35/64 | miss (none) | latency=0.309s | elapsed=11.4s | eta=9.4s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=da784fff1191443f9288576c311d45ce for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0040] 36/64 | miss (none) | latency=0.357s | elapsed=11.8s | eta=9.1s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=cf0578b952f64f9f9c80f978b2f26828 for chunk_text='Is a hand visible in this frame?...'
+[unscrew_bottle_cap_frame_0015] 37/64 | miss (none) | latency=0.270s | elapsed=12.0s | eta=8.8s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=7dcd8f26a10e4a2688d124faa3dd125c for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0008] 38/64 | miss (none) | latency=0.581s | elapsed=12.6s | eta=8.6s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=e781e5f2050842aca92d92cb3ffb77ff for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0037] 39/64 | miss (none) | latency=0.293s | elapsed=12.9s | eta=8.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=c97d4206d0304dda848785656c846440 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0052] 40/64 | miss (none) | latency=0.317s | elapsed=13.2s | eta=7.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=cdf22613bd66494584b455946169d6ff for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0047] 41/64 | miss (none) | latency=0.272s | elapsed=13.5s | eta=7.6s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=d02302f7b8ea41069bb089728f7bf862 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0036] 42/64 | miss (none) | latency=0.290s | elapsed=13.8s | eta=7.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=85629f8650e946f1a969d32cf1ff5f11 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0048] 43/64 | miss (none) | latency=0.292s | elapsed=14.1s | eta=6.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=81a4c400158c4ef98bc4f48156a2dbe9 for chunk_text='Is a hand visible in this frame?...'
+[unscrew_bottle_cap_frame_0016] 44/64 | miss (none) | latency=0.307s | elapsed=14.4s | eta=6.5s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=5e836bdf547f41f4afa75f2c8b841e7a for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0058] 45/64 | miss (none) | latency=0.301s | elapsed=14.7s | eta=6.2s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=97e70106dcb8480f9913705da952bf21 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0027] 46/64 | miss (none) | latency=0.299s | elapsed=15.0s | eta=5.9s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=b40b22e60ef947f5a3be6807b542ac94 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0028] 47/64 | miss (none) | latency=0.249s | elapsed=15.2s | eta=5.5s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=03f8428cae0d432ab5ec8fce3f0cf678 for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0006] 48/64 | miss (none) | latency=0.587s | elapsed=15.8s | eta=5.3s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=fcffcec8935b4dd28f8a237c35e66f7b for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0003] 49/64 | miss (none) | latency=0.580s | elapsed=16.4s | eta=5.0s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=90c0307cd6a1498fa6c75ab4a7e8aaa5 for chunk_text='Is a hand visible in this frame?...'
+[unscrew_bottle_cap_frame_0014] 50/64 | miss (none) | latency=0.277s | elapsed=16.7s | eta=4.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=6512f32cf6604e5fb8b3c6dabbc3007d for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0033] 51/64 | miss (none) | latency=0.297s | elapsed=17.0s | eta=4.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=6c975be49eeb4d7f9015f6441e3ca4c3 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0059] 52/64 | miss (none) | latency=0.305s | elapsed=17.3s | eta=4.0s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=5b561020d17247e3b09093ea14a70259 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0038] 53/64 | miss (none) | latency=0.312s | elapsed=17.6s | eta=3.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=8f1afc0d2bda451fb51c87baad944541 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0024] 54/64 | miss (none) | latency=0.295s | elapsed=17.9s | eta=3.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=4f7a7ad1bb3b46d38da2dddc19010999 for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0007] 55/64 | miss (none) | latency=0.606s | elapsed=18.5s | eta=3.0s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=b5e2ab172c08470eb1dd03bedc2a56ef for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0035] 56/64 | miss (none) | latency=0.290s | elapsed=18.8s | eta=2.7s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=9ff8a1299e634fb8862127c017dd968f for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0053] 57/64 | miss (none) | latency=0.254s | elapsed=19.1s | eta=2.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=610e886f8acf41fea14b22307c79c496 for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0005] 58/64 | miss (none) | latency=0.564s | elapsed=19.6s | eta=2.0s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+INFO 12-11 06:17:13 [loggers.py:236] Engine 000: Avg prompt throughput: 108.8 tokens/s, Avg generation throughput: 41.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.4%, MM cache hit rate: 0.0%
+[DEBUG] add_observation: Capturing chunk_id=e416c83ba41947c5bc669ccc886a68f0 for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0004] 59/64 | miss (none) | latency=0.588s | elapsed=20.2s | eta=1.7s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=492c5d0312d64645a51a62faec46c8a3 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0064] 60/64 | miss (none) | latency=0.289s | elapsed=20.5s | eta=1.4s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=fffb7eda52764a7bb065833478064bbc for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0026] 61/64 | miss (none) | latency=0.297s | elapsed=20.8s | eta=1.0s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=4d8a7dbee23c4a6e9fa205d6e2607a9c for chunk_text='What is in this frame?...'
+[unscrew_bottle_cap_frame_0010] 62/64 | miss (none) | latency=0.605s | elapsed=21.4s | eta=0.7s | answer match=False | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] Q: What is in this frame?
+[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+[DEBUG] Reference: A bottle and a laptop on a table.
+---
+[DEBUG] chunk_text='What is in this frame?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=14af5f6efb394d278b4909a2dd275fe6 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0061] 63/64 | miss (none) | latency=0.313s | elapsed=21.7s | eta=0.3s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+[DEBUG] add_observation: Capturing chunk_id=58e9f52f04d749829315e1f192683678 for chunk_text='Is the cap on the bottle?...'
+[unscrew_bottle_cap_frame_0042] 64/64 | miss (none) | latency=0.300s | elapsed=22.0s | eta=0.0s | answer match=True | exact_text=skip, kv_cache=miss, semantic_text=skip
+[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=none
+
+=== Experiment summary ===
+Total prompts: 64
+Cache hits: 0 (0.0%)
+Cache misses: 64 (100.0%)
+Average latency: 0.343s
+Average latency (hit): 0.000s
+Average latency (miss): 0.343s
+Answer match rate: 82.8% (n=64)
+Technique breakdown:
+  - exact_text: hit=0, miss=0, skip=64
+  - kv_cache: hit=0, miss=64, skip=0
+  - semantic_text: hit=0, miss=0, skip=64
+Detailed results saved to experiment2/experiment_logs/20251211-061715-video_frames-question-Qwen-Qwen3-VL-4B-Instruct.csv
+
+=== vLLM prefix/KV cache metrics ===
+- vllm:kv_cache_usage_perc [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0.0
+- vllm:prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 2490
+- vllm:prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 1008
+- vllm:external_prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
+- vllm:external_prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
+
+=== Sample outputs ===
+ID=unscrew_bottle_cap_frame_0011 | img=output_0011 | miss (none) | latency=0.535s
+Techniques: exact_text=skip, kv_cache=miss, semantic_text=skip
+Q: What is in this frame?
+Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
+Reference: A bottle and a laptop on a table.
+---
+ID=unscrew_bottle_cap_frame_0021 | img=output_0021 | miss (none) | latency=0.295s
+Techniques: exact_text=skip, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is on the bottle.
+---
+ID=unscrew_bottle_cap_frame_0013 | img=output_0013 | miss (none) | latency=0.306s
+Techniques: exact_text=skip, kv_cache=miss, semantic_text=skip
+Q: Is a hand visible in this frame?
+Model: No, there is no hand visible in this frame.
+Reference: There is a hand in the frame.
+---
+ID=unscrew_bottle_cap_frame_0032 | img=output_0032 | miss (none) | latency=0.275s
+Techniques: exact_text=skip, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is on the bottle.
+---
+ID=unscrew_bottle_cap_frame_0051 | img=output_0051 | miss (none) | latency=0.274s
+Techniques: exact_text=skip, kv_cache=miss, semantic_text=skip
+Q: Is the cap on the bottle?
+Model: No, the cap is not on the bottle.
+Reference: The cap is not on the bottle.
+---
+[rank0]:[W1211 06:17:15.618787179 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

@@ -46,12 +46,15 @@ class ExactTextCache:
     def record(self, text: str, chunk_id: str) -> None:
         normalized = self.normalize(text)
         if not normalized:
+            print(f"[DEBUG] ExactTextCache.record: normalized text is empty for chunk_id={chunk_id}")
             return
         entries = self._index.setdefault(normalized, [])
         if chunk_id in entries:
+            print(f"[DEBUG] ExactTextCache.record: chunk_id={chunk_id} already exists for normalized='{normalized[:50]}...'")
             return
         entries.append(chunk_id)
         self._persist()
+        print(f"[DEBUG] ExactTextCache.record: Saved chunk_id={chunk_id} for normalized='{normalized[:50]}...', total_entries_for_this_text={len(entries)}, total_normalized_texts={len(self._index)}")
 
     def candidates(self, normalized: str) -> list[str]:
         return list(self._index.get(normalized, ()))
