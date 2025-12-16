@@ -195,6 +195,22 @@ def load_embedding_hook(identifier: str) -> EmbeddingHook:
         return VisionImageEmbeddingHook()
     if lowered in {"prompt_vision", "prompt+vision", "prompt-image", "prompt_image"}:
         return PromptVisionEmbeddingHook()
+    # Native VLM embeddings
+    if lowered in {"native_encoder", "native-encoder", "encoder"}:
+        from experiment2.semantic_cache.native_embedding_hooks import NativeEncoderEmbeddingHook
+        return NativeEncoderEmbeddingHook()
+    if lowered in {"native_text", "native-text", "text"}:
+        from experiment2.semantic_cache.native_embedding_hooks import NativeTextEmbeddingHook
+        return NativeTextEmbeddingHook()
+    if lowered in {"native_text_vision", "native-text-vision", "text_vision", "text+vision"}:
+        from experiment2.semantic_cache.native_embedding_hooks import NativeTextVisionEmbeddingHook
+        return NativeTextVisionEmbeddingHook()
+    if lowered in {"native_decoder", "native-decoder", "decoder"}:
+        from experiment2.semantic_cache.native_embedding_hooks import NativeDecoderEmbeddingHook
+        return NativeDecoderEmbeddingHook()
+    if lowered in {"native", "native_both", "native-both", "encoder_decoder", "encoder-decoder"}:
+        from experiment2.semantic_cache.native_embedding_hooks import NativeEncoderDecoderEmbeddingHook
+        return NativeEncoderDecoderEmbeddingHook()
     if ":" in identifier:
         module_name, attr = identifier.rsplit(":", 1)
     elif "." in identifier:

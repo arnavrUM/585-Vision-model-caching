@@ -12,7 +12,7 @@ import time
 import uuid
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
@@ -34,6 +34,7 @@ if os.environ.get("HF_HUB_ENABLE_HF_TRANSFER") == "1":
 
 import numpy as np
 import requests
+import torch
 from datasets import Dataset, load_dataset
 from huggingface_hub.errors import (
     GatedRepoError,
@@ -58,6 +59,7 @@ from experiment2.semantic_cache.embedding_hooks import (
     NullEmbeddingHook,
     load_embedding_hook,
 )
+from experiment2.semantic_cache.embedding_store import EmbeddingStore
 from experiment2.semantic_cache.experiment_driver import drain_request
 from experiment2.semantic_cache.semantic_cache import CacheHit, ReuseReport
 from experiment2.semantic_cache.techniques import EmbeddingLayerConfig
@@ -615,8 +617,8 @@ def build_prompts(
     return prompts
 
 
-def run_samples(
-    llm: LLM,
+def _run_samples_hf(
+    llm: Any,  # HFModelWrapper
     cache: Any,
     prompts: Sequence[GQAPrompt],
     sampling_params: SamplingParams,
@@ -624,7 +626,157 @@ def run_samples(
     embedding_hook: EmbeddingHook | None = None,
     model_name: str | None = None,
     image_loader: PromptImageLoader | None = None,
+    embedding_store: EmbeddingStore | None = None,
 ) -> list[PromptResult]:
+    """Run samples using Hugging Face transformers (simpler, no vLLM engine)."""
+    results: list[PromptResult] = []
+    total = len(prompts)
+    start_run = time.perf_counter()
+    requires_llm_request = getattr(cache, "requires_llm_request", True)
+    
+    for idx, sample in enumerate(prompts, 1):
+        request_id = uuid.uuid4().hex
+        embeddings: dict[str, np.ndarray] = {}
+        
+        # Try to get cached embeddings first to avoid expensive extraction
+        if embedding_store and embedding_hook is not None:
+            cached_embeddings = embedding_store.get(sample.chunk_text, sample.image_id)
+            if cached_embeddings:
+                embeddings = cached_embeddings
+        
+        # Extract embeddings if not cached
+        if not embeddings and embedding_hook is not None:
+            try:
+                embeddings = embedding_hook(llm=llm, sample=sample) or {}
+                # Cache extracted embeddings for future use
+                if embeddings and embedding_store:
+                    embedding_store.put(sample.chunk_text, embeddings, sample.image_id)
+            except Exception as exc:
+                print(f"[warn] embedding hook failed for {sample.dataset_id}: {exc}")
+        
+        # Load image if needed
+        image = None
+        if image_loader is not None:
+            image = image_loader.load(sample)
+        
+        # Try cache first (if supported by backend)
+        cache_start = time.perf_counter()
+        reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
+        hit = reuse.hit
+        sample_metadata = {"dataset_id": sample.dataset_id, "image_id": sample.image_id}
+        
+        # For vision models with embedding cache, verify image_id matches (prevent wrong image reuse)
+        if hit and hit.source.startswith("embedding"):
+            # Check if cached chunk has same image_id
+            stored_chunk = cache.store.load(hit.chunk_id)
+            if stored_chunk and stored_chunk.metadata.get("image_id") != sample.image_id:
+                # Image mismatch - invalidate the hit
+                hit_source = hit.source
+                hit = None
+                reuse.statuses[hit_source] = "miss:image_mismatch"
+                reuse = ReuseReport(hit=None, statuses=reuse.statuses, response=None)
+        
+        response_text: str
+        latency: float
+        
+        if reuse.response is not None:
+            # Cache hit - measure cache lookup time
+            response_text = reuse.response.strip()
+            latency = time.perf_counter() - cache_start
+        else:
+            # Cache miss - need to run model
+            chunk_id = None
+            if hit is None:
+                result_chunk = cache.add_observation(
+                    request_id,
+                    sample.chunk_text,
+                    embeddings=embeddings,
+                    metadata=sample_metadata,
+                )
+                if result_chunk:
+                    chunk_id = result_chunk.chunk_id
+            
+            start = time.perf_counter()
+            
+            # Create cache key for encoder reuse
+            encoder_cache_key = f"{sample.dataset_id}_{sample.image_id}"
+            
+            # Generate with HF model (will reuse cached encoder outputs if available)
+            outputs = llm.generate(
+                prompts=[sample.prompt],
+                sampling_params=sampling_params,
+                images=[image] if image else None,
+                encoder_cache_key=encoder_cache_key if embeddings else None
+            )
+            response_text = outputs[0].outputs[0].text.strip()
+            
+            # Clear cached encoder outputs for this sample to save memory
+            if hasattr(llm, '_cached_encoder_outputs') and encoder_cache_key in llm._cached_encoder_outputs:
+                del llm._cached_encoder_outputs[encoder_cache_key]
+            
+            latency = time.perf_counter() - start
+            
+            finalize_metadata = dict(sample_metadata)
+            if chunk_id:
+                finalize_metadata["chunk_id"] = chunk_id
+            cache.finalize_observation(
+                request_id,
+                response=response_text,
+                model_name=model_name,
+                metadata=finalize_metadata,
+            )
+        
+        is_correct = _answer_matches(sample.reference, response_text)
+        results.append(
+            PromptResult(
+                sample=sample,
+                hit=hit,
+                latency=latency,
+                response=response_text,
+                is_correct=is_correct,
+                techniques=reuse.statuses,
+            )
+        )
+        
+        source = hit.source if hit else "none"
+        technique_str = ", ".join(f"{name}={status}" for name, status in sorted(reuse.statuses.items()))
+        elapsed = time.perf_counter() - start_run
+        remaining = total - idx
+        eta = (elapsed / idx) * remaining if idx else 0.0
+        progress = f"{idx}/{total}"
+        print(
+            f"[{sample.dataset_id}] {progress} | "
+            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.6f}s | "
+            f"elapsed={elapsed:.1f}s | eta={eta:.1f}s | answer match={is_correct} | "
+            f"{technique_str}"
+        )
+    
+    return results
+
+
+def run_samples(
+    llm: Any,  # LLM or HFModelWrapper
+    cache: Any,
+    prompts: Sequence[GQAPrompt],
+    sampling_params: SamplingParams,
+    *,
+    embedding_hook: EmbeddingHook | None = None,
+    model_name: str | None = None,
+    image_loader: PromptImageLoader | None = None,
+    embedding_store: EmbeddingStore | None = None,
+) -> list[PromptResult]:
+    # Check if using HuggingFace wrapper
+    is_hf = not hasattr(llm, 'llm_engine')
+    
+    if is_hf:
+        return _run_samples_hf(
+            llm, cache, prompts, sampling_params,
+            embedding_hook=embedding_hook,
+            model_name=model_name,
+            image_loader=image_loader,
+            embedding_store=embedding_store,
+        )
+    
     engine = llm.llm_engine
     results: list[PromptResult] = []
     total = len(prompts)
@@ -691,6 +843,7 @@ def run_samples(
                 engine.add_request(request_id, request_prompt_text, sampling_params)
             engine_request_added = True
 
+        cache_start = time.perf_counter()
         if requires_llm_request:
             _enqueue_request()
             reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
@@ -704,7 +857,7 @@ def run_samples(
         latency: float
         if reuse.response is not None:
             response_text = reuse.response.strip()
-            latency = 0.0
+            latency = time.perf_counter() - cache_start
         else:
             if not engine_request_added:
                 _enqueue_request()
@@ -744,7 +897,7 @@ def run_samples(
         progress = f"{idx}/{total}"
         print(
             f"[{sample.dataset_id}] {progress} | "
-            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.3f}s | "
+            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.6f}s | "
             f"elapsed={elapsed:.1f}s | eta={eta:.1f}s | answer match={is_correct} | "
             f"{technique_str}"
         )
@@ -805,9 +958,9 @@ def summarize_results(results: Sequence[PromptResult]) -> None:
     print(f"Total prompts: {len(results)}")
     print(f"Cache hits: {len(hits)} ({len(hits) / len(results):.1%})")
     print(f"Cache misses: {len(misses)} ({len(misses) / len(results):.1%})")
-    print(f"Average latency: {_mean(latencies):.3f}s")
-    print(f"Average latency (hit): {_mean([r.latency for r in hits]):.3f}s")
-    print(f"Average latency (miss): {_mean([r.latency for r in misses]):.3f}s")
+    print(f"Average latency: {_mean(latencies):.6f}s")
+    print(f"Average latency (hit): {_mean([r.latency for r in hits]):.6f}s")
+    print(f"Average latency (miss): {_mean([r.latency for r in misses]):.6f}s")
     print(f"Answer match rate: {match_rate:.1%} (n={len(matchable)})")
     if hits_by_source:
         print("Hit rate by cache:")
@@ -815,7 +968,7 @@ def summarize_results(results: Sequence[PromptResult]) -> None:
             rate = len(source_hits) / len(results)
             print(
                 f"  - {source}: {len(source_hits)} hits ({rate:.1%} of prompts) | "
-                f"avg latency={_mean([r.latency for r in source_hits]):.3f}s"
+                f"avg latency={_mean([r.latency for r in source_hits]):.6f}s"
             )
     technique_summary: dict[str, Counter] = {}
     for result in results:
@@ -925,7 +1078,7 @@ def log_summary_row(path: str | Path, args: argparse.Namespace, aggregates: dict
     if isinstance(shuffle_seed, int) and shuffle_seed < 0:
         shuffle_seed = ""
     row = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "experiment": args.experiment_name or "",
         "model": args.model,
         "dataset_config": args.dataset_config,
@@ -954,11 +1107,11 @@ def log_summary_row(path: str | Path, args: argparse.Namespace, aggregates: dict
         "preset": args.preset or "",
         "total_prompts": aggregates["total_prompts"],
         "cache_hits": aggregates["cache_hits"],
-        "cache_hit_rate": aggregates["cache_hit_rate"],
-        "avg_latency": aggregates["avg_latency"],
-        "avg_latency_hit": aggregates["avg_latency_hit"],
-        "avg_latency_miss": aggregates["avg_latency_miss"],
-        "answer_accuracy": aggregates["answer_accuracy"],
+        "cache_hit_rate": f"{aggregates['cache_hit_rate']:.6f}",
+        "avg_latency": f"{aggregates['avg_latency']:.6f}" if aggregates['avg_latency'] is not None else "",
+        "avg_latency_hit": f"{aggregates['avg_latency_hit']:.6f}" if aggregates['avg_latency_hit'] is not None else "",
+        "avg_latency_miss": f"{aggregates['avg_latency_miss']:.6f}" if aggregates['avg_latency_miss'] is not None else "",
+        "answer_accuracy": f"{aggregates['answer_accuracy']:.6f}" if aggregates['answer_accuracy'] is not None else "",
         "wall_time": aggregates.get("wall_time"),
         "hit_breakdown": json.dumps(aggregates["hit_breakdown"]),
     }
@@ -1165,6 +1318,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "'model-router' performs response-level shortcutting based on semantic matches.",
     )
     parser.add_argument(
+        "--use-hf",
+        action="store_true",
+        help="Use Hugging Face transformers instead of vLLM (avoids multimodal cache bugs).",
+    )
+    parser.add_argument(
         "--index-encoder",
         default="sentence-transformers/all-MiniLM-L6-v2",
         help="Sentence-transformers model used for semantic search.",
@@ -1309,17 +1467,66 @@ def main() -> None:
     )
     print(f"Loaded {len(prompts)} prompts from {dataset_label}.")
     summarize_chunk_texts(prompts)
+    
+    # Check CUDA availability
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if not torch.cuda.is_available():
+        print("ERROR: CUDA is not available. vLLM requires a CUDA-enabled GPU.")
+        print("Please ensure:")
+        print("  1. You have a CUDA-capable GPU installed")
+        print("  2. CUDA drivers are properly installed")
+        print("  3. PyTorch can detect the GPU")
+        print("  4. CUDA_VISIBLE_DEVICES is set correctly if you have multiple GPUs")
+        sys.exit(1)
+    
+    print(f"CUDA device count: {torch.cuda.device_count()}")
     try:
-        llm = LLM(
+        torch.cuda.init()  # Explicitly initialize CUDA
+        print(f"CUDA device name: {torch.cuda.get_device_name(0)}")
+    except RuntimeError as e:
+        print(f"ERROR: Failed to initialize CUDA device: {e}")
+        print("CUDA is detected but cannot be initialized.")
+        print("This may indicate:")
+        print("  1. CUDA driver version mismatch with PyTorch")
+        print("  2. GPU is already in use or in a bad state")
+        print("  3. Insufficient permissions to access the GPU")
+        print("  4. Multiple GPU initialization issue - try setting CUDA_VISIBLE_DEVICES=0")
+        print("Try running: nvidia-smi")
+        print("\nTo fix, run your script with: CUDA_VISIBLE_DEVICES=0 python ...")
+        sys.exit(1)
+    
+    # Initialize model - either vLLM or Hugging Face transformers
+    if args.use_hf:
+        print("[info] Using Hugging Face transformers (no vLLM multimodal cache)")
+        from experiment2.hf_model_wrapper import HFModelWrapper
+        
+        llm = HFModelWrapper(
             model=args.model,
             trust_remote_code=args.trust_remote_code,
-            disable_log_stats=args.disable_log_stats,
             tensor_parallel_size=args.tensor_parallel_size,
             gpu_memory_utilization=args.gpu_memory_utilization,
             max_model_len=args.max_model_len,
         )
-    except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
-        _raise_model_load_help(args.model, exc)
+    else:
+        # Workaround for vLLM 0.12.0 multimodal cache assertion bug in v1 engine
+        # The v1 engine has a bug where multimodal features get evicted from cache
+        # but later requests still expect them to be there (race condition with prefix caching)
+        import os
+        os.environ['VLLM_USE_V1'] = '0'
+        print("[info] Using vLLM (attempting v0 engine to avoid multimodal cache bug)")
+        
+        try:
+            llm = LLM(
+                model=args.model,
+                trust_remote_code=args.trust_remote_code,
+                disable_log_stats=args.disable_log_stats,
+                tensor_parallel_size=args.tensor_parallel_size,
+                gpu_memory_utilization=args.gpu_memory_utilization,
+                max_model_len=args.max_model_len,
+                enforce_eager=True,
+            )
+        except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
+            _raise_model_load_help(args.model, exc)
     layer_configs = [parse_embedding_layer_spec(spec) for spec in args.embedding_layer]
     if args.cache_backend == "semantic-kv":
         cache_config = SemanticCacheConfig(
@@ -1365,6 +1572,13 @@ def main() -> None:
     else:
         embedding_hook = NullEmbeddingHook()
 
+    # Create embedding store for caching extracted embeddings (avoids re-extraction overhead)
+    embedding_store: EmbeddingStore | None = None
+    if layer_configs and args.embedding_hook.startswith("native"):
+        embedding_store_dir = Path(args.cache_dir) / "embedding_cache"
+        embedding_store = EmbeddingStore(embedding_store_dir)
+        print(f"[info] Embedding caching enabled at {embedding_store_dir}")
+
     start_overall = time.perf_counter()
     results = run_samples(
         llm,
@@ -1374,6 +1588,7 @@ def main() -> None:
         embedding_hook=embedding_hook,
         model_name=args.model,
         image_loader=prompt_image_loader,
+        embedding_store=embedding_store,
     )
     wall_time = time.perf_counter() - start_overall
     aggregates = aggregate_results(results)
@@ -1393,7 +1608,7 @@ def main() -> None:
         source = result.hit.source if result.hit else "none"
         print(
             f"ID={result.sample.dataset_id} | img={result.sample.image_id} | "
-            f"{'hit' if result.hit else 'miss'} ({source}) | latency={result.latency:.3f}s"
+            f"{'hit' if result.hit else 'miss'} ({source}) | latency={result.latency:.6f}s"
         )
         technique_str = ", ".join(
             f"{name}={status}" for name, status in sorted(result.techniques.items())

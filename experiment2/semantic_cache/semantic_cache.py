@@ -245,9 +245,12 @@ class SemanticCache:
                 num_tokens=0,
             )
             self._record_chunk(chunk_text, stub)
-            if self.embedding_cache and embeddings:
-                self.embedding_cache.add(stub.chunk_id, embeddings)
-                stub.metadata.setdefault("embeddings", list(embeddings))
+            # Store embeddings for later addition (don't add to cache yet to avoid self-matches)
+            if metadata:
+                stub.metadata.update(metadata)
+            # Store embeddings to be added after generation completes
+            stub.metadata["_pending_embeddings"] = embeddings
+            stub.metadata.setdefault("embeddings", list(embeddings) if embeddings else [])
             return stub
 
         def _capture_and_store() -> None:
@@ -279,7 +282,16 @@ class SemanticCache:
         model_name: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        # The semantic cache captures KV blocks asynchronously; nothing to finalize here.
+        # In dry-run mode, add pending embeddings now that generation is complete
+        if self.config.dry_run and self.embedding_cache:
+            # Find the chunk for this request and add its embeddings
+            chunk_id = metadata.get("chunk_id") if metadata else None
+            if chunk_id:
+                stored = self.store.load(chunk_id)
+                if stored and "_pending_embeddings" in stored.metadata:
+                    pending_embeddings = stored.metadata.pop("_pending_embeddings")
+                    if pending_embeddings:
+                        self.embedding_cache.add(chunk_id, pending_embeddings)
         return None
 
     def close(self) -> None:
