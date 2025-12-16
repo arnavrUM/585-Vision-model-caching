@@ -28,6 +28,7 @@ class SemanticCacheConfig:
     index_encoder: str = "sentence-transformers/all-MiniLM-L6-v2"
     index_encoder_device: str = "cuda"
     cache_dir: str = "experiment2/kv_chunks"
+    cache_size_limit_bytes: int | None = None
     text_cache_index: str = "text_index.json"
     enable_fusion_cache: bool = False
     fusion_cache_dir: str = "experiment2/fusion_chunks"
@@ -76,7 +77,10 @@ class SemanticCache:
             )
         else:
             self.semantic_text_cache = None
-        self.store = store or KVStore(self.config.cache_dir)
+        self.store = store or KVStore(
+            self.config.cache_dir,
+            max_bytes=self.config.cache_size_limit_bytes,
+        )
         self.exact_cache: ExactTextCache | None = None
         if self.config.enable_exact_text_cache:
             self.exact_cache = ExactTextCache(self.config.cache_dir, self.config.text_cache_index)
@@ -110,6 +114,7 @@ class SemanticCache:
             return True
         stored = self.store.load(match.chunk_id)
         if stored is None:
+            print(f"[warn] semantic cache inject skipped: stored chunk {match.chunk_id} missing on disk")
             return False
         try:
             injected = self.adapter.inject(request_id, stored)
@@ -240,9 +245,12 @@ class SemanticCache:
                 num_tokens=0,
             )
             self._record_chunk(chunk_text, stub)
-            if self.embedding_cache and embeddings:
-                self.embedding_cache.add(stub.chunk_id, embeddings)
-                stub.metadata.setdefault("embeddings", list(embeddings))
+            # Store embeddings for later addition (don't add to cache yet to avoid self-matches)
+            if metadata:
+                stub.metadata.update(metadata)
+            # Store embeddings to be added after generation completes
+            stub.metadata["_pending_embeddings"] = embeddings
+            stub.metadata.setdefault("embeddings", list(embeddings) if embeddings else [])
             return stub
 
         def _capture_and_store() -> None:
@@ -274,7 +282,16 @@ class SemanticCache:
         model_name: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        # The semantic cache captures KV blocks asynchronously; nothing to finalize here.
+        # In dry-run mode, add pending embeddings now that generation is complete
+        if self.config.dry_run and self.embedding_cache:
+            # Find the chunk for this request and add its embeddings
+            chunk_id = metadata.get("chunk_id") if metadata else None
+            if chunk_id:
+                stored = self.store.load(chunk_id)
+                if stored and "_pending_embeddings" in stored.metadata:
+                    pending_embeddings = stored.metadata.pop("_pending_embeddings")
+                    if pending_embeddings:
+                        self.embedding_cache.add(chunk_id, pending_embeddings)
         return None
 
     def close(self) -> None:

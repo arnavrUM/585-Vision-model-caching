@@ -44,6 +44,14 @@ os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
 _RUNTIME_IMPORTED = False
 
 
+def _gb_to_bytes(limit_gb: float | None) -> int | None:
+    if limit_gb is None:
+        return None
+    if limit_gb <= 0:
+        return 0
+    return int(limit_gb * (1024**3))
+
+
 def _import_runtime() -> None:
     global _RUNTIME_IMPORTED
     if _RUNTIME_IMPORTED:
@@ -204,6 +212,7 @@ def run_spec(spec: ExperimentSpec, *, cache_mode: str) -> tuple[dict[str, Any], 
             similarity_threshold=spec.similarity_threshold,
             max_cached_blocks=spec.max_cached_blocks,
             cache_dir=spec.cache_dir,
+            cache_size_limit_bytes=_gb_to_bytes(getattr(spec, "cache_max_size_gb", None)),
             index_encoder=spec.index_encoder,
             index_encoder_device=spec.index_encoder_device,
             embedding_layers=layer_configs,

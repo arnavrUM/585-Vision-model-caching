@@ -12,10 +12,11 @@ import time
 import uuid
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
+from io import BytesIO
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import urlparse
 
 if __package__ is None or __package__ == "":
@@ -33,12 +34,14 @@ if os.environ.get("HF_HUB_ENABLE_HF_TRANSFER") == "1":
 
 import numpy as np
 import requests
+import torch
 from datasets import Dataset, load_dataset
 from huggingface_hub.errors import (
     GatedRepoError,
     HfHubHTTPError,
     RepositoryNotFoundError,
 )
+from PIL import Image
 from vllm import LLM, SamplingParams
 from vllm.v1.metrics.reader import (
     Counter as MetricCounter,
@@ -56,6 +59,7 @@ from experiment2.semantic_cache.embedding_hooks import (
     NullEmbeddingHook,
     load_embedding_hook,
 )
+from experiment2.semantic_cache.embedding_store import EmbeddingStore
 from experiment2.semantic_cache.experiment_driver import drain_request
 from experiment2.semantic_cache.semantic_cache import CacheHit, ReuseReport
 from experiment2.semantic_cache.techniques import EmbeddingLayerConfig
@@ -63,6 +67,14 @@ from experiment2.semantic_cache.techniques import EmbeddingLayerConfig
 LLAVA_DATA_URL = (
     "https://huggingface.co/datasets/liuhaotian/LLaVA-Instruct-150K/"
     "resolve/main/llava_instruct_150k.json?download=1"
+)
+DEFAULT_GQA_IMAGE_DIR = "experiment2/gqa_images"
+_IMAGE_PLACEHOLDERS = (
+    "<image>",
+    "<|image_0|>",
+    "<|vision_start|>",
+    "<img>",
+    "<|vision_start|><|image_pad|><|vision_end|>",
 )
 
 
@@ -103,6 +115,14 @@ def _maybe_log_relocated(label: str, requested: str, resolved: Path) -> None:
     default = Path.cwd() / requested_path
     if resolved != default:
         print(f"[info] {label} resolved to {resolved}")
+
+
+def _gb_to_bytes(limit_gb: float | None) -> int | None:
+    if limit_gb is None:
+        return None
+    if limit_gb <= 0:
+        return 0
+    return int(limit_gb * (1024**3))
 
 
 LLAVA_CACHE_DIR = _resolve_storage_dir("experiment2/dataset_cache")
@@ -168,6 +188,7 @@ def _raise_model_load_help(model: str, exc: Exception) -> None:
 class GQAPrompt:
     dataset_id: str
     image_id: str
+    image_path: str | None
     question: str
     answer: str
     full_answer: str
@@ -188,6 +209,55 @@ class PromptResult:
     response: str
     is_correct: bool | None
     techniques: dict[str, str]
+
+
+class PromptImageLoader:
+    """Opens cached dataset images once per prompt for multimodal requests."""
+
+    def __init__(self, placeholder: str = "<image>") -> None:
+        self._warned_paths: set[str] = set()
+        self.placeholder = placeholder
+
+    def load(self, sample: GQAPrompt) -> Image.Image | None:
+        path = sample.image_path
+        if not path:
+            return None
+        try:
+            with Image.open(path) as pil_image:
+                return pil_image.convert("RGB")
+        except Exception as exc:  # pragma: no cover - defensive
+            if path not in self._warned_paths:
+                print(
+                    f"[warn] Unable to load image for sample {sample.dataset_id} "
+                    f"(image_id={sample.image_id}, path={path}): {exc}"
+                )
+                self._warned_paths.add(path)
+            return None
+
+
+def _ensure_image_placeholder(prompt: str) -> str:
+    lowered = prompt.lower()
+    if any(token.lower() in lowered for token in _IMAGE_PLACEHOLDERS):
+        return prompt
+    if prompt.strip():
+        return f"<image>\n{prompt}"
+    return "<image>"
+
+
+def _ensure_image_placeholder_custom(prompt: str, placeholder: str) -> str:
+    lowered = prompt.lower()
+    if any(token.lower() in lowered for token in _IMAGE_PLACEHOLDERS):
+        return prompt
+    if prompt.strip():
+        return f"{placeholder}\n{prompt}"
+    return placeholder
+
+
+def _default_image_placeholder(model_name: str) -> str:
+    lowered = (model_name or "").lower()
+    if "qwen" in lowered:
+        return "<|vision_start|><|image_pad|><|vision_end|>"
+    return "<image>"
 
 
 def format_prompt(template: str, sample: dict) -> str:
@@ -272,6 +342,84 @@ def load_gqa_dataset(config: str, split: str, limit: int | None, seed: int | Non
         limit = min(limit, len(dataset))
         dataset = dataset.select(range(limit))
     return dataset
+
+
+def _gqa_image_config_name(config: str) -> str:
+    if config.endswith("_instructions"):
+        return config[: -len("_instructions")] + "_images"
+    if config.endswith("_images"):
+        return config
+    return f"{config}_images"
+
+
+def _gqa_image_cache_path(root: Path, image_id: str) -> Path:
+    slug = str(image_id)
+    if len(slug) > 3:
+        return root / slug[:3] / f"{slug}.jpg"
+    return root / f"{slug}.jpg"
+
+
+def _serialize_image(image_obj: Any) -> Image.Image:
+    if isinstance(image_obj, Image.Image):
+        return image_obj.convert("RGB")
+    if isinstance(image_obj, dict) and "bytes" in image_obj:
+        return Image.open(BytesIO(image_obj["bytes"])).convert("RGB")
+    raise TypeError(f"Unsupported GQA image payload type: {type(image_obj)}")
+
+
+def ensure_gqa_images(
+    image_ids: Iterable[str],
+    dataset_config: str,
+    split: str,
+    cache_dir: Path,
+) -> dict[str, str]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    resolved: dict[str, str] = {}
+    pending: set[str] = set()
+    for raw_id in image_ids:
+        image_id = str(raw_id or "").strip()
+        if not image_id:
+            continue
+        path = _gqa_image_cache_path(cache_dir, image_id)
+        if path.is_file():
+            resolved[image_id] = str(path)
+        else:
+            pending.add(image_id)
+    if not pending:
+        return resolved
+    config_name = _gqa_image_config_name(dataset_config)
+    print(f"Downloading {len(pending)} GQA images to {cache_dir} ...")
+    dataset = load_dataset(
+        "lmms-lab/GQA",
+        config_name,
+        split=split,
+        streaming=True,
+    )
+    for sample in dataset:
+        sample_id = str(sample.get("id", "")).strip()
+        if sample_id not in pending:
+            continue
+        image = sample.get("image")
+        if image is None:
+            continue
+        image_path = _gqa_image_cache_path(cache_dir, sample_id)
+        image_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            converted = _serialize_image(image)
+            converted.save(image_path, format="JPEG")
+        except Exception as exc:
+            print(f"[warn] Failed to save image {sample_id} to {image_path}: {exc}")
+            continue
+        resolved[sample_id] = str(image_path)
+        pending.remove(sample_id)
+        if not pending:
+            break
+    if pending:
+        print(
+            f"[warn] Unable to locate {len(pending)} GQA images in split '{split}' "
+            f"(config={config_name}). Missing examples include: {sorted(list(pending))[:5]}"
+        )
+    return resolved
 
 
 def load_llava_dataset(data_url: str, limit: int | None, seed: int | None) -> Dataset:
@@ -436,6 +584,7 @@ def build_prompts(
     dataset: Iterable[dict],
     prompt_template: str,
     chunk_source: str,
+    image_paths: Mapping[str, str] | None = None,
 ) -> list[GQAPrompt]:
     prompts: list[GQAPrompt] = []
     for sample in dataset:
@@ -443,10 +592,16 @@ def build_prompts(
         chunk_text = sample.get("_chunk_override")
         if not chunk_text:
             chunk_text = render_chunk_text(sample, chunk_source)
+        image_id = sample.get("imageId", "")
+        image_path = image_paths.get(str(image_id)) if image_paths and image_id else None
+        metadata_extra = dict(sample.get("_metadata", {}) or {})
+        if image_path:
+            metadata_extra["image_path"] = str(image_path)
         prompts.append(
             GQAPrompt(
                 dataset_id=sample.get("id", ""),
                 image_id=sample.get("imageId", ""),
+                image_path=image_path,
                 question=sample.get("question", ""),
                 answer=sample.get("answer", ""),
                 full_answer=sample.get("fullAnswer", ""),
@@ -455,22 +610,173 @@ def build_prompts(
                 metadata={
                     "groups": sample.get("groups", {}),
                     "semantic": sample.get("semanticStr", ""),
-                    "extra": sample.get("_metadata", {}),
+                    "extra": metadata_extra,
                 },
             )
         )
     return prompts
 
 
-def run_samples(
-    llm: LLM,
+def _run_samples_hf(
+    llm: Any,  # HFModelWrapper
     cache: Any,
     prompts: Sequence[GQAPrompt],
     sampling_params: SamplingParams,
     *,
     embedding_hook: EmbeddingHook | None = None,
     model_name: str | None = None,
+    image_loader: PromptImageLoader | None = None,
+    embedding_store: EmbeddingStore | None = None,
 ) -> list[PromptResult]:
+    """Run samples using Hugging Face transformers (simpler, no vLLM engine)."""
+    results: list[PromptResult] = []
+    total = len(prompts)
+    start_run = time.perf_counter()
+    requires_llm_request = getattr(cache, "requires_llm_request", True)
+    
+    for idx, sample in enumerate(prompts, 1):
+        request_id = uuid.uuid4().hex
+        embeddings: dict[str, np.ndarray] = {}
+        
+        # Try to get cached embeddings first to avoid expensive extraction
+        if embedding_store and embedding_hook is not None:
+            cached_embeddings = embedding_store.get(sample.chunk_text, sample.image_id)
+            if cached_embeddings:
+                embeddings = cached_embeddings
+        
+        # Extract embeddings if not cached
+        if not embeddings and embedding_hook is not None:
+            try:
+                embeddings = embedding_hook(llm=llm, sample=sample) or {}
+                # Cache extracted embeddings for future use
+                if embeddings and embedding_store:
+                    embedding_store.put(sample.chunk_text, embeddings, sample.image_id)
+            except Exception as exc:
+                print(f"[warn] embedding hook failed for {sample.dataset_id}: {exc}")
+        
+        # Load image if needed
+        image = None
+        if image_loader is not None:
+            image = image_loader.load(sample)
+        
+        # Try cache first (if supported by backend)
+        cache_start = time.perf_counter()
+        reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
+        hit = reuse.hit
+        sample_metadata = {"dataset_id": sample.dataset_id, "image_id": sample.image_id}
+        
+        # For vision models with embedding cache, verify image_id matches (prevent wrong image reuse)
+        if hit and hit.source.startswith("embedding"):
+            # Check if cached chunk has same image_id
+            stored_chunk = cache.store.load(hit.chunk_id)
+            if stored_chunk and stored_chunk.metadata.get("image_id") != sample.image_id:
+                # Image mismatch - invalidate the hit
+                hit_source = hit.source
+                hit = None
+                reuse.statuses[hit_source] = "miss:image_mismatch"
+                reuse = ReuseReport(hit=None, statuses=reuse.statuses, response=None)
+        
+        response_text: str
+        latency: float
+        
+        if reuse.response is not None:
+            # Cache hit - measure cache lookup time
+            response_text = reuse.response.strip()
+            latency = time.perf_counter() - cache_start
+        else:
+            # Cache miss - need to run model
+            chunk_id = None
+            if hit is None:
+                result_chunk = cache.add_observation(
+                    request_id,
+                    sample.chunk_text,
+                    embeddings=embeddings,
+                    metadata=sample_metadata,
+                )
+                if result_chunk:
+                    chunk_id = result_chunk.chunk_id
+            
+            start = time.perf_counter()
+            
+            # Create cache key for encoder reuse
+            encoder_cache_key = f"{sample.dataset_id}_{sample.image_id}"
+            
+            # Generate with HF model (will reuse cached encoder outputs if available)
+            outputs = llm.generate(
+                prompts=[sample.prompt],
+                sampling_params=sampling_params,
+                images=[image] if image else None,
+                encoder_cache_key=encoder_cache_key if embeddings else None
+            )
+            response_text = outputs[0].outputs[0].text.strip()
+            
+            # Clear cached encoder outputs for this sample to save memory
+            if hasattr(llm, '_cached_encoder_outputs') and encoder_cache_key in llm._cached_encoder_outputs:
+                del llm._cached_encoder_outputs[encoder_cache_key]
+            
+            latency = time.perf_counter() - start
+            
+            finalize_metadata = dict(sample_metadata)
+            if chunk_id:
+                finalize_metadata["chunk_id"] = chunk_id
+            cache.finalize_observation(
+                request_id,
+                response=response_text,
+                model_name=model_name,
+                metadata=finalize_metadata,
+            )
+        
+        is_correct = _answer_matches(sample.reference, response_text)
+        results.append(
+            PromptResult(
+                sample=sample,
+                hit=hit,
+                latency=latency,
+                response=response_text,
+                is_correct=is_correct,
+                techniques=reuse.statuses,
+            )
+        )
+        
+        source = hit.source if hit else "none"
+        technique_str = ", ".join(f"{name}={status}" for name, status in sorted(reuse.statuses.items()))
+        elapsed = time.perf_counter() - start_run
+        remaining = total - idx
+        eta = (elapsed / idx) * remaining if idx else 0.0
+        progress = f"{idx}/{total}"
+        print(
+            f"[{sample.dataset_id}] {progress} | "
+            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.6f}s | "
+            f"elapsed={elapsed:.1f}s | eta={eta:.1f}s | answer match={is_correct} | "
+            f"{technique_str}"
+        )
+    
+    return results
+
+
+def run_samples(
+    llm: Any,  # LLM or HFModelWrapper
+    cache: Any,
+    prompts: Sequence[GQAPrompt],
+    sampling_params: SamplingParams,
+    *,
+    embedding_hook: EmbeddingHook | None = None,
+    model_name: str | None = None,
+    image_loader: PromptImageLoader | None = None,
+    embedding_store: EmbeddingStore | None = None,
+) -> list[PromptResult]:
+    # Check if using HuggingFace wrapper
+    is_hf = not hasattr(llm, 'llm_engine')
+    
+    if is_hf:
+        return _run_samples_hf(
+            llm, cache, prompts, sampling_params,
+            embedding_hook=embedding_hook,
+            model_name=model_name,
+            image_loader=image_loader,
+            embedding_store=embedding_store,
+        )
+    
     engine = llm.llm_engine
     results: list[PromptResult] = []
     total = len(prompts)
@@ -485,27 +791,76 @@ def run_samples(
             except Exception as exc:
                 print(f"[warn] embedding hook failed for {sample.dataset_id}: {exc}")
                 embeddings = {}
+        prompt_payload: Any
+        request_prompt_text = sample.prompt
+        if image_loader is not None:
+            image = image_loader.load(sample)
+            if image is not None:
+                request_prompt_text = _ensure_image_placeholder_custom(
+                    request_prompt_text, image_loader.placeholder
+                )
+                prompt_payload = {"prompt": request_prompt_text, "multi_modal_data": {"image": image}}
+            else:
+                prompt_payload = request_prompt_text
+        else:
+            prompt_payload = request_prompt_text
+        engine_prompt = prompt_payload
+        tokenization_kwargs = None
+        process_inputs = getattr(llm, "_process_inputs", None)
+        if process_inputs is not None:
+            engine_prompt, tokenization_kwargs = process_inputs(
+                request_id,
+                prompt_payload,
+                sampling_params,
+                lora_request=None,
+                priority=0,
+            )
+        elif image_loader is not None:
+            # Multi-modal inputs require vLLM v1 processor support.
+            image_loader = None
+            print(
+                "[warn] vLLM build does not expose _process_inputs; "
+                "falling back to text-only prompts without images."
+            )
+            engine_prompt = request_prompt_text
+            prompt_payload = request_prompt_text
         engine_request_added = False
-        if requires_llm_request:
-            engine.add_request(request_id, sample.prompt, sampling_params)
+
+        print(request_prompt_text)
+        def _enqueue_request() -> None:
+            nonlocal engine_request_added
+            if engine_request_added:
+                return
+            if process_inputs is not None:
+                engine.add_request(
+                    request_id,
+                    engine_prompt,
+                    sampling_params,
+                    tokenization_kwargs=tokenization_kwargs,
+                    prompt_text=request_prompt_text,
+                )
+            else:
+                engine.add_request(request_id, request_prompt_text, sampling_params)
             engine_request_added = True
+
+        cache_start = time.perf_counter()
+        if requires_llm_request:
+            _enqueue_request()
             reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
         else:
             reuse = cache.try_reuse(request_id, sample.chunk_text, embeddings=embeddings)
             if reuse.response is None:
-                engine.add_request(request_id, sample.prompt, sampling_params)
-                engine_request_added = True
+                _enqueue_request()
         hit = reuse.hit
         sample_metadata = {"dataset_id": sample.dataset_id, "image_id": sample.image_id}
         response_text: str
         latency: float
         if reuse.response is not None:
             response_text = reuse.response.strip()
-            latency = 0.0
+            latency = time.perf_counter() - cache_start
         else:
             if not engine_request_added:
-                engine.add_request(request_id, sample.prompt, sampling_params)
-                engine_request_added = True
+                _enqueue_request()
             if hit is None:
                 cache.add_observation(
                     request_id,
@@ -542,7 +897,7 @@ def run_samples(
         progress = f"{idx}/{total}"
         print(
             f"[{sample.dataset_id}] {progress} | "
-            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.3f}s | "
+            f"{'hit' if hit else 'miss'} ({source}) | latency={latency:.6f}s | "
             f"elapsed={elapsed:.1f}s | eta={eta:.1f}s | answer match={is_correct} | "
             f"{technique_str}"
         )
@@ -603,9 +958,9 @@ def summarize_results(results: Sequence[PromptResult]) -> None:
     print(f"Total prompts: {len(results)}")
     print(f"Cache hits: {len(hits)} ({len(hits) / len(results):.1%})")
     print(f"Cache misses: {len(misses)} ({len(misses) / len(results):.1%})")
-    print(f"Average latency: {_mean(latencies):.3f}s")
-    print(f"Average latency (hit): {_mean([r.latency for r in hits]):.3f}s")
-    print(f"Average latency (miss): {_mean([r.latency for r in misses]):.3f}s")
+    print(f"Average latency: {_mean(latencies):.6f}s")
+    print(f"Average latency (hit): {_mean([r.latency for r in hits]):.6f}s")
+    print(f"Average latency (miss): {_mean([r.latency for r in misses]):.6f}s")
     print(f"Answer match rate: {match_rate:.1%} (n={len(matchable)})")
     if hits_by_source:
         print("Hit rate by cache:")
@@ -613,7 +968,7 @@ def summarize_results(results: Sequence[PromptResult]) -> None:
             rate = len(source_hits) / len(results)
             print(
                 f"  - {source}: {len(source_hits)} hits ({rate:.1%} of prompts) | "
-                f"avg latency={_mean([r.latency for r in source_hits]):.3f}s"
+                f"avg latency={_mean([r.latency for r in source_hits]):.6f}s"
             )
     technique_summary: dict[str, Counter] = {}
     for result in results:
@@ -723,7 +1078,7 @@ def log_summary_row(path: str | Path, args: argparse.Namespace, aggregates: dict
     if isinstance(shuffle_seed, int) and shuffle_seed < 0:
         shuffle_seed = ""
     row = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "experiment": args.experiment_name or "",
         "model": args.model,
         "dataset_config": args.dataset_config,
@@ -752,11 +1107,11 @@ def log_summary_row(path: str | Path, args: argparse.Namespace, aggregates: dict
         "preset": args.preset or "",
         "total_prompts": aggregates["total_prompts"],
         "cache_hits": aggregates["cache_hits"],
-        "cache_hit_rate": aggregates["cache_hit_rate"],
-        "avg_latency": aggregates["avg_latency"],
-        "avg_latency_hit": aggregates["avg_latency_hit"],
-        "avg_latency_miss": aggregates["avg_latency_miss"],
-        "answer_accuracy": aggregates["answer_accuracy"],
+        "cache_hit_rate": f"{aggregates['cache_hit_rate']:.6f}",
+        "avg_latency": f"{aggregates['avg_latency']:.6f}" if aggregates['avg_latency'] is not None else "",
+        "avg_latency_hit": f"{aggregates['avg_latency_hit']:.6f}" if aggregates['avg_latency_hit'] is not None else "",
+        "avg_latency_miss": f"{aggregates['avg_latency_miss']:.6f}" if aggregates['avg_latency_miss'] is not None else "",
+        "answer_accuracy": f"{aggregates['answer_accuracy']:.6f}" if aggregates['answer_accuracy'] is not None else "",
         "wall_time": aggregates.get("wall_time"),
         "hit_breakdown": json.dumps(aggregates["hit_breakdown"]),
     }
@@ -876,6 +1231,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Dataset to evaluate (GQA, LLaVA-Instruct-150K, or the synthetic cache demo).",
     )
     parser.add_argument(
+        "--gqa-image-dir",
+        default=DEFAULT_GQA_IMAGE_DIR,
+        help="Directory where GQA images downloaded from Hugging Face are cached.",
+    )
+    parser.add_argument(
         "--trust-remote-code",
         action="store_true",
         help="Forward to vLLM to trust remote code when loading the model.",
@@ -945,11 +1305,22 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Where cached KV chunks are stored.",
     )
     parser.add_argument(
+        "--cache-max-size-gb",
+        type=float,
+        default=None,
+        help="Optional disk budget (in GB) for KV cache; oldest chunks are pruned when exceeded.",
+    )
+    parser.add_argument(
         "--cache-backend",
         choices=["semantic-kv", "model-router"],
         default="semantic-kv",
         help="Selects the caching backend. 'semantic-kv' reuses KV blocks via vLLM; "
         "'model-router' performs response-level shortcutting based on semantic matches.",
+    )
+    parser.add_argument(
+        "--use-hf",
+        action="store_true",
+        help="Use Hugging Face transformers instead of vLLM (avoids multimodal cache bugs).",
     )
     parser.add_argument(
         "--index-encoder",
@@ -1057,16 +1428,29 @@ def main() -> None:
         resolved_fusion_dir = _resolve_storage_dir(args.fusion_cache_dir)
         _maybe_log_relocated("fusion_cache_dir", args.fusion_cache_dir, resolved_fusion_dir)
         args.fusion_cache_dir = str(resolved_fusion_dir)
+    if getattr(args, "gqa_image_dir", None):
+        resolved_gqa_dir = _resolve_storage_dir(args.gqa_image_dir)
+        _maybe_log_relocated("gqa_image_dir", args.gqa_image_dir, resolved_gqa_dir)
+        args.gqa_image_dir = str(resolved_gqa_dir)
     limit = None if args.max_samples is None or args.max_samples < 0 else args.max_samples
+    cache_size_limit_bytes = _gb_to_bytes(getattr(args, "cache_max_size_gb", None))
     shuffle_seed = None if args.shuffle_seed is None or args.shuffle_seed < 0 else args.shuffle_seed
     if not args.keep_cache_dirs:
         _purge_cache_dir(args.cache_dir)
         if args.enable_fusion_cache:
             _purge_cache_dir(args.fusion_cache_dir)
+    image_path_map: dict[str, str] | None = None
     if args.dataset == "gqa":
         dataset = load_gqa_dataset(args.dataset_config, args.split, limit, shuffle_seed)
         base_samples: Sequence[dict] = dataset
         dataset_label = f"lmms-lab/GQA ({args.dataset_config}, split={args.split})"
+        image_ids: Iterable[str]
+        if isinstance(dataset, Dataset):
+            image_ids = dataset["imageId"]
+        else:
+            image_ids = [sample.get("imageId", "") for sample in base_samples]
+        cache_root = Path(args.gqa_image_dir)
+        image_path_map = ensure_gqa_images(image_ids, args.dataset_config, args.split, cache_root)
     elif args.dataset == "llava150k":
         dataset = load_llava_dataset(args.llava_data_url, limit, shuffle_seed)
         base_samples = build_llava_records(dataset)
@@ -1075,21 +1459,74 @@ def main() -> None:
         dataset = build_synthetic_samples()
         base_samples = dataset if limit is None else dataset[:limit]
         dataset_label = "synthetic-cache-validation"
-    prompts = build_prompts(base_samples, args.prompt_template, args.chunk_source)
+    prompts = build_prompts(
+        base_samples,
+        args.prompt_template,
+        args.chunk_source,
+        image_paths=image_path_map or {},
+    )
     print(f"Loaded {len(prompts)} prompts from {dataset_label}.")
     summarize_chunk_texts(prompts)
-
+    
+    # Check CUDA availability
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    if not torch.cuda.is_available():
+        print("ERROR: CUDA is not available. vLLM requires a CUDA-enabled GPU.")
+        print("Please ensure:")
+        print("  1. You have a CUDA-capable GPU installed")
+        print("  2. CUDA drivers are properly installed")
+        print("  3. PyTorch can detect the GPU")
+        print("  4. CUDA_VISIBLE_DEVICES is set correctly if you have multiple GPUs")
+        sys.exit(1)
+    
+    print(f"CUDA device count: {torch.cuda.device_count()}")
     try:
-        llm = LLM(
+        torch.cuda.init()  # Explicitly initialize CUDA
+        print(f"CUDA device name: {torch.cuda.get_device_name(0)}")
+    except RuntimeError as e:
+        print(f"ERROR: Failed to initialize CUDA device: {e}")
+        print("CUDA is detected but cannot be initialized.")
+        print("This may indicate:")
+        print("  1. CUDA driver version mismatch with PyTorch")
+        print("  2. GPU is already in use or in a bad state")
+        print("  3. Insufficient permissions to access the GPU")
+        print("  4. Multiple GPU initialization issue - try setting CUDA_VISIBLE_DEVICES=0")
+        print("Try running: nvidia-smi")
+        print("\nTo fix, run your script with: CUDA_VISIBLE_DEVICES=0 python ...")
+        sys.exit(1)
+    
+    # Initialize model - either vLLM or Hugging Face transformers
+    if args.use_hf:
+        print("[info] Using Hugging Face transformers (no vLLM multimodal cache)")
+        from experiment2.hf_model_wrapper import HFModelWrapper
+        
+        llm = HFModelWrapper(
             model=args.model,
             trust_remote_code=args.trust_remote_code,
-            disable_log_stats=args.disable_log_stats,
             tensor_parallel_size=args.tensor_parallel_size,
             gpu_memory_utilization=args.gpu_memory_utilization,
             max_model_len=args.max_model_len,
         )
-    except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
-        _raise_model_load_help(args.model, exc)
+    else:
+        # Workaround for vLLM 0.12.0 multimodal cache assertion bug in v1 engine
+        # The v1 engine has a bug where multimodal features get evicted from cache
+        # but later requests still expect them to be there (race condition with prefix caching)
+        import os
+        os.environ['VLLM_USE_V1'] = '0'
+        print("[info] Using vLLM (attempting v0 engine to avoid multimodal cache bug)")
+        
+        try:
+            llm = LLM(
+                model=args.model,
+                trust_remote_code=args.trust_remote_code,
+                disable_log_stats=args.disable_log_stats,
+                tensor_parallel_size=args.tensor_parallel_size,
+                gpu_memory_utilization=args.gpu_memory_utilization,
+                max_model_len=args.max_model_len,
+                enforce_eager=True,
+            )
+        except (OSError, RepositoryNotFoundError, GatedRepoError, HfHubHTTPError) as exc:
+            _raise_model_load_help(args.model, exc)
     layer_configs = [parse_embedding_layer_spec(spec) for spec in args.embedding_layer]
     if args.cache_backend == "semantic-kv":
         cache_config = SemanticCacheConfig(
@@ -1104,6 +1541,7 @@ def main() -> None:
             dry_run=(args.cache_mode != "live"),
             enable_semantic_text_cache=not args.disable_semantic_cache,
             enable_exact_text_cache=not args.disable_exact_cache,
+            cache_size_limit_bytes=cache_size_limit_bytes,
         )
         cache: Any = SemanticCache(llm, config=cache_config)
     else:
@@ -1118,12 +1556,28 @@ def main() -> None:
         )
         cache = ModelRouter(llm, config=router_config)
     sampling_params = SamplingParams(temperature=args.temperature, max_tokens=args.max_tokens)
-
+    prompt_image_loader: PromptImageLoader | None = None
+    if image_path_map:
+        if hasattr(llm, "_process_inputs"):
+            placeholder_text = _default_image_placeholder(args.model)
+            prompt_image_loader = PromptImageLoader(placeholder=placeholder_text)
+        else:
+            print(
+                "[warn] Installed vLLM version does not expose _process_inputs; "
+                "continuing without attaching images to prompts."
+            )
     embedding_hook: EmbeddingHook | None
     if layer_configs:
         embedding_hook = load_embedding_hook(args.embedding_hook)
     else:
         embedding_hook = NullEmbeddingHook()
+
+    # Create embedding store for caching extracted embeddings (avoids re-extraction overhead)
+    embedding_store: EmbeddingStore | None = None
+    if layer_configs and args.embedding_hook.startswith("native"):
+        embedding_store_dir = Path(args.cache_dir) / "embedding_cache"
+        embedding_store = EmbeddingStore(embedding_store_dir)
+        print(f"[info] Embedding caching enabled at {embedding_store_dir}")
 
     start_overall = time.perf_counter()
     results = run_samples(
@@ -1133,6 +1587,8 @@ def main() -> None:
         sampling_params,
         embedding_hook=embedding_hook,
         model_name=args.model,
+        image_loader=prompt_image_loader,
+        embedding_store=embedding_store,
     )
     wall_time = time.perf_counter() - start_overall
     aggregates = aggregate_results(results)
@@ -1152,7 +1608,7 @@ def main() -> None:
         source = result.hit.source if result.hit else "none"
         print(
             f"ID={result.sample.dataset_id} | img={result.sample.image_id} | "
-            f"{'hit' if result.hit else 'miss'} ({source}) | latency={result.latency:.3f}s"
+            f"{'hit' if result.hit else 'miss'} ({source}) | latency={result.latency:.6f}s"
         )
         technique_str = ", ".join(
             f"{name}={status}" for name, status in sorted(result.techniques.items())

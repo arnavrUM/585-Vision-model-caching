@@ -52,6 +52,8 @@ python experiment2/test_vllm.py \
   --embedding-hook prompt_vision
 ```
 
+> Live reuse + disk budget: pass `--cache-mode live` to actually capture and inject KV/fusion tensors, and pair it with `--cache-max-size-gb <N>` (e.g., 5) to prune the oldest cached chunks once the KV cache directory exceeds that budget.
+
 ### Model Presets (InternVL3.5-2B included)
 
 Some model families require a consistent bundle of settings (model id, `trust_remote_code`, embedding layers, etc.). Use `--preset` to hydrate those recommended values and then override whichever flags you care about:
@@ -141,6 +143,7 @@ Just like the CLI, a spec entry can set `"preset": "internvl3.5-2b"` (or any oth
 - `--disable-semantic-cache` – completely bypass the semantic text cache (useful for ablations).
 - `--disable-exact-cache` – turn off the normalized exact-text cache (e.g., for fusion-only runs).
 - `--max-cached-blocks`, `--cache-dir`, `--index-encoder` – storage and encoder tweaks.
+- `--cache-max-size-gb` – optional disk budget for KV chunks; oldest chunks are pruned to respect it.
 
 Logs include hit provenance:
 
