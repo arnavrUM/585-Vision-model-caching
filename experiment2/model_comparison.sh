@@ -63,7 +63,7 @@ run_experiment() {
   shift
   echo "=== ${name} ==="
   rm -rf "${FUSION_DIR}" "${CACHE_DIR}"
-  CUDA_LAUNCH_BLOCKING=1 TORCH_USE_CUDA_DSA=1 python "${EXPERIMENT_ROOT}/test_vllm.py" \
+  CUDA_LAUNCH_BLOCKING=1 TORCH_USE_CUDA_DSA=1 python "${EXPERIMENT_ROOT}/run_benchmark.py" \
     --experiment-name "${name}" \
     "${COMMON_ARGS[@]}" \
     "${MAX_MODEL_LEN_ARGS[@]}" \

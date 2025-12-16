@@ -7,11 +7,11 @@ from typing import Any
 from experiment2.specs import DEFAULT_PROMPT_TEMPLATE, ExperimentSpec
 
 
-def build_test_vllm_command(
+def build_benchmark_command(
     spec: ExperimentSpec,
     *,
     cache_mode: str,
-    script_path: str = "experiment2/test_vllm.py",
+    script_path: str = "experiment2/run_benchmark.py",
     log_file: str | None = None,
     samples_dir: str | None = None,
 ) -> str:
@@ -75,3 +75,8 @@ def build_test_vllm_command(
     prefix = cleanup if cleanup else ""
     pieces = [piece for piece in [prefix, echo, f"CUDA_LAUNCH_BLOCKING=1 {command}"] if piece]
     return " && ".join(pieces)
+
+
+def build_test_vllm_command(**kwargs) -> str:
+    """Backward-compatible alias for the old helper name."""
+    return build_benchmark_command(**kwargs)

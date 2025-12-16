@@ -97,12 +97,13 @@ A custom experiment for testing on video frame sequences without KV chunk inject
 
 #### Dataset
 
-The video frames dataset is located in the `dataset_custom/` folder. The dataset contains sequential video frames (e.g., `unscrew_bottle_cap/` with frames `output_0001.png` through `output_0064.png`).
+The video frames dataset is located in the `dataset_custom/` folder. The dataset contains sequential video frames (e.g., `unscrew_bottle_cap/` with frames `output_0001.png` through `output_0064.png`). Metadata lives at `dataset_custom/video_frames_labels.json`.
 
 #### Running the Experiment
 
 ```bash
-./experiment2_custom/run_video_frames.sh
+chmod +x ./experiment2/run_video_frames.sh
+./experiment2/run_video_frames.sh
 ```
 
 This script will:
@@ -122,6 +123,12 @@ This script will:
 **Results**: Experiment result is saved to `experiment2_frames_nokv_results.csv` in the project root.
 
 **Logs**: Individual experiment logs are saved to `video_frames_logs_<timestamp>/` directory with one log file per experiment run.
+
+You can override the dataset or frame root if you relocate the assets:
+- `DATA_FILE=/path/to/video_frames_labels.json ./experiment2/run_video_frames.sh`
+- `FRAMES_ROOT=/data/custom_frames ./experiment2/run_video_frames.sh`
+
+The same paths can be passed directly to `experiment2/run_benchmark.py` via `--video-frames-data` and `--video-frames-root`.
 
 ## Output Files
 
