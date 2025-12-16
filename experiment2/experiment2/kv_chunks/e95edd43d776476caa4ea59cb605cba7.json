@@ -1,1 +1,0 @@
-{"chunk_id": "e95edd43d776476caa4ea59cb605cba7", "chunk_text": "select: fence ->choose vposition: bottom|top [0]", "response": "The fence is in the bottom part.", "model_name": "Qwen/Qwen3-VL-2B-Instruct", "metadata": {"dataset_id": "04816687", "image_id": "3701"}}

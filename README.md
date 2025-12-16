@@ -48,18 +48,61 @@ This script will:
 
 **Results**: Experiment data is saved to `experiment1_results.csv` in the `experiment1/` directory.
 
-## Experiment 2: MLC (Video Frames, No KV)
+## Experiment 2: VLM Scene Understanding with Hierarchical Caching
 
-### Dataset
+Experiment 2 evaluates multi-level caching (MLC) on vision-language models using the GQA dataset. The experiment implements a hierarchical cache with multiple levels:
+- **L0.5**: Exact text matching
+- **L1**: Semantic text similarity
+- **L2**: Multimodal embeddings (prompt + vision)
+
+### Running Ablation Study
+
+Run ablation experiments to test individual cache techniques across different thresholds:
+
+```bash
+chmod +x ./experiment2/ablation.sh
+./experiment2/ablation.sh
+```
+
+This will test:
+- **Qwen3-VL-2B-Instruct** and **InternVL3.5-2B-Instruct**
+- Each cache level in isolation (exact-only, fusion-only, semantic with thresholds 0.5-0.9)
+- Embedding cache with various threshold combinations
+- Native VLM embeddings at different similarity levels
+
+**Results**: Saved to `experiment2/experiment_logs/ablation_results.csv`
+
+**Sample outputs**: Per-sample traces saved to `experiment2/experiment_logs/ablation_samples/`
+
+### Running Model Comparison
+
+Compare cache performance across different model sizes with all techniques enabled:
+
+```bash
+chmod +x ./experiment2/model_comparison.sh
+./experiment2/model_comparison.sh
+```
+
+This tests:
+- **Qwen3-VL**: 2B, 4B, 8B variants
+- **InternVL3.5**: 2B, 4B, 8B variants
+- Both with and without caching enabled
+- All cache levels active (exact text + semantic text + prompt/vision embeddings)
+
+**Results**: Saved to `experiment2/experiment_logs/model_comparison_results.csv`
+
+### Experiment 2 Custom: Video Frames (No KV Injection)
+
+A custom experiment for testing on video frame sequences without KV chunk injection.
+
+#### Dataset
 
 The video frames dataset is located in the `dataset_custom/` folder. The dataset contains sequential video frames (e.g., `unscrew_bottle_cap/` with frames `output_0001.png` through `output_0064.png`).
 
-### Running the Experiment
-
-Run MLC pipeline on video frames data (No KV chunk injection):
+#### Running the Experiment
 
 ```bash
-./run_video_frames.sh
+./experiment2_custom/run_video_frames.sh
 ```
 
 This script will:
@@ -75,7 +118,6 @@ This script will:
   - L0.5: Exact text cache
   - L1: Semantic text cache
   - L2: Prompt and vision embedding caches
-- (Testing on sample dataset `dataset_custom/unscrew_bottle_cap`)
 
 **Results**: Experiment result is saved to `experiment2_frames_nokv_results.csv` in the project root.
 
@@ -84,5 +126,7 @@ This script will:
 ## Output Files
 
 - **Experiment 1**: `experiment1/experiment1_results.csv`
-- **Experiment 2**: `experiment2_frames_nokv_results.csv`
-- **Experiment 2 Logs**: `video_frames_logs_<timestamp>/`
+- **Experiment 2 Ablation**: `experiment2/experiment_logs/ablation_results.csv`
+- **Experiment 2 Model Comparison**: `experiment2/experiment_logs/model_comparison_results.csv`
+- **Experiment 2 Custom (Video Frames)**: `experiment2_frames_nokv_results.csv`
+- **Experiment 2 Custom Logs**: `video_frames_logs_<timestamp>/`
