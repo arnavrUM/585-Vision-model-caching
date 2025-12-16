@@ -1,714 +1,0 @@
-[2025-12-11 06:17:23] INFO loader.py:120: Loading faiss with AVX512 support.
-[2025-12-11 06:17:23] INFO loader.py:122: Successfully loaded faiss with AVX512 support.
-[info] cache_dir resolved to /workspace/experiment2/kv_chunks
-[info] fusion_cache_dir resolved to /workspace/experiment2/fusion_chunks
-Loaded 64 prompts from Video Frames (video_frames_dataset.json).
-Chunk-key uniqueness: 3 unique keys / 64 prompts (100.0% reused >=2x)
-Most frequent chunk keys:
-- occurrences=48: Is the cap on the bottle?
-- occurrences=11: What is in this frame?
-- occurrences=5: Is a hand visible in this frame?
-INFO 12-11 06:17:23 [utils.py:253] non-default args: {'trust_remote_code': True, 'seed': None, 'max_model_len': 4096, 'model': 'Qwen/Qwen3-VL-4B-Instruct'}
-The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
-WARNING 12-11 06:17:23 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-WARNING 12-11 06:17:23 [arg_utils.py:1183] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
-INFO 12-11 06:17:24 [model.py:637] Resolved architecture: Qwen3VLForConditionalGeneration
-INFO 12-11 06:17:24 [model.py:1750] Using max model len 4096
-INFO 12-11 06:17:24 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=8192.
-INFO 12-11 06:17:27 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='Qwen/Qwen3-VL-4B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen3-VL-4B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=Qwen/Qwen3-VL-4B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-INFO 12-11 06:17:28 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.16.96.2:56259 backend=nccl
-INFO 12-11 06:17:28 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-INFO 12-11 06:17:35 [gpu_model_runner.py:3467] Starting to load model Qwen/Qwen3-VL-4B-Instruct...
-INFO 12-11 06:17:36 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
-Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:00<00:00,  1.35it/s]
-Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.14it/s]
-Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:01<00:00,  1.17it/s]
-
-INFO 12-11 06:17:38 [default_loader.py:308] Loading weights took 1.89 seconds
-INFO 12-11 06:17:39 [gpu_model_runner.py:3549] Model loading took 8.6794 GiB memory and 2.785093 seconds
-INFO 12-11 06:17:39 [gpu_model_runner.py:4306] Encoder cache will be initialized with a budget of 151250 tokens, and profiled with 1 video items of the maximum feature size.
-INFO 12-11 06:17:52 [backends.py:655] Using cache directory: /root/.cache/vllm/torch_compile_cache/1ec5e0b347/rank_0_0/backbone for vLLM's torch.compile
-INFO 12-11 06:17:52 [backends.py:715] Dynamo bytecode transform time: 7.58 s
-INFO 12-11 06:17:56 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.324 s
-INFO 12-11 06:17:57 [monitor.py:34] torch.compile takes 10.91 s in total
-INFO 12-11 06:17:58 [gpu_worker.py:359] Available KV cache memory: 26.51 GiB
-INFO 12-11 06:17:59 [kv_cache_utils.py:1286] GPU KV cache size: 193,008 tokens
-INFO 12-11 06:17:59 [kv_cache_utils.py:1291] Maximum concurrency for 4,096 tokens per request: 47.12x
-Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:03, 15.39it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:02, 15.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:02, 15.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:02, 16.04it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:00<00:02, 16.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:00<00:02, 16.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:00<00:02, 16.91it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:00<00:02, 17.10it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 19/51 [00:01<00:01, 18.79it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:01<00:01, 19.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▉     | 25/51 [00:01<00:01, 20.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  55%|█████▍    | 28/51 [00:01<00:01, 21.28it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  61%|██████    | 31/51 [00:01<00:00, 21.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:01<00:00, 22.00it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  73%|███████▎  | 37/51 [00:01<00:00, 22.31it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:02<00:00, 22.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  84%|████████▍ | 43/51 [00:02<00:00, 23.30it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:02<00:00, 23.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  96%|█████████▌| 49/51 [00:02<00:00, 24.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:02<00:00, 20.65it/s]
-Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   6%|▌         | 2/35 [00:00<00:01, 18.15it/s]Capturing CUDA graphs (decode, FULL):  14%|█▍        | 5/35 [00:00<00:01, 20.59it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:01, 21.41it/s]Capturing CUDA graphs (decode, FULL):  31%|███▏      | 11/35 [00:00<00:01, 21.90it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:00<00:00, 22.42it/s]Capturing CUDA graphs (decode, FULL):  49%|████▊     | 17/35 [00:00<00:00, 22.86it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:00<00:00, 23.21it/s]Capturing CUDA graphs (decode, FULL):  66%|██████▌   | 23/35 [00:01<00:00, 23.89it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:01<00:00, 24.73it/s]Capturing CUDA graphs (decode, FULL):  83%|████████▎ | 29/35 [00:01<00:00, 25.53it/s]Capturing CUDA graphs (decode, FULL):  91%|█████████▏| 32/35 [00:01<00:00, 26.49it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 24.38it/s]
-INFO 12-11 06:18:03 [gpu_model_runner.py:4466] Graph capturing finished in 4 secs, took 0.71 GiB
-INFO 12-11 06:18:03 [core.py:254] init engine (profile, create kv cache, warmup model) took 24.38 seconds
-INFO 12-11 06:18:04 [llm.py:343] Supported tasks: ('generate',)
-[2025-12-11 06:18:04] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
-[DEBUG] SemanticCache.__init__: cache_dir=/workspace/experiment2/kv_chunks, exact_cache enabled=True
-[DEBUG] ExactTextCache created: index_path=/workspace/experiment2/kv_chunks/text_index.json, existing_entries=0
-[2025-12-11 06:18:07] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
-[2025-12-11 06:18:09] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: clip-ViT-B-32
-Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 69.83it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.08it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.07it/s]
-[DEBUG] exact_text: MISS for normalized='what is in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: empty cache (0 entries)
-[DEBUG] embedding:vision: empty cache (0 entries)
-[DEBUG] semantic_text_cache: empty cache (0 entries)
-[DEBUG] semantic_text: no match found for chunk_text='What is in this frame?...'
-[DEBUG] add_observation: Capturing chunk_id=5966d66b907f48b9ae45b110ad681132 for chunk_text='What is in this frame?...'
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.17it/s]
-[DEBUG] _record_chunk: Added to semantic_text_cache, chunk_id=5966d66b907f48b9ae45b110ad681132, chunk_text='What is in this frame?...', cache_size=1
-[DEBUG] ExactTextCache.record: Saved chunk_id=5966d66b907f48b9ae45b110ad681132 for normalized='what is in this frame?...', total_entries_for_this_text=1, total_normalized_texts=1
-[DEBUG] _record_chunk: Added to exact_cache, chunk_id=5966d66b907f48b9ae45b110ad681132, normalized='what is in this frame?...', total_candidates_for_this_text=1
-[DEBUG] add_observation: Added embeddings to embedding_cache for chunk_id=5966d66b907f48b9ae45b110ad681132, layers=['prompt', 'vision']
-[unscrew_bottle_cap_frame_0011] 1/64 | miss (none) | latency=0.735s | elapsed=0.9s | eta=59.4s | answer match=False | embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-[DEBUG] chunk_text='What is in this frame?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.12it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.44it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.43it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5538 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9257 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=79b658e2b158486a9c9058428f4b9bf6, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9257
-[unscrew_bottle_cap_frame_0021] 2/64 | hit (embedding:vision) | latency=0.192s | elapsed=1.4s | eta=43.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: No, the cap is not on the bottle.
-[DEBUG] Reference: The cap is on the bottle.
----
-[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.14it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.47it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.46it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.7644 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9348 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=2cdb1bf1d3b245fa9faa009d1f73198b, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9348
-[unscrew_bottle_cap_frame_0013] 3/64 | hit (embedding:vision) | latency=0.230s | elapsed=1.8s | eta=37.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: Is a hand visible in this frame?
-[DEBUG] Model: No, there is no hand visible in this frame.
-[DEBUG] Reference: There is a hand in the frame.
----
-[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.69it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.39it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.38it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5686 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9087 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=b558bb86923f45d59f4ec8624be39b9b, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9087
-[unscrew_bottle_cap_frame_0032] 4/64 | hit (embedding:vision) | latency=0.252s | elapsed=2.3s | eta=34.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: No, the cap is not on the bottle.
-[DEBUG] Reference: The cap is on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.09it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.94it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5543 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9194 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=d9e67ebb96c045bf9d3f15bc15ff0f99, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9194
-[unscrew_bottle_cap_frame_0051] 5/64 | hit (embedding:vision) | latency=0.261s | elapsed=2.7s | eta=31.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: No, the cap is not on the bottle.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 115.84it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.67it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5328 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9324 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=7f3e3b204c1c4a50b212660c251fe67c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9324
-[unscrew_bottle_cap_frame_0056] 6/64 | hit (embedding:vision) | latency=0.192s | elapsed=3.1s | eta=29.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.41it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.16it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.15it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5659 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9152 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=8046ac9213964a3cb426593dfc426514, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9152
-[unscrew_bottle_cap_frame_0020] 7/64 | hit (embedding:vision) | latency=0.255s | elapsed=3.6s | eta=29.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.71it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.90it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5366 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8963 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=47d9de8696dc4027b47394352a70545b, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8963
-[unscrew_bottle_cap_frame_0057] 8/64 | hit (embedding:vision) | latency=0.254s | elapsed=4.0s | eta=27.7s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.84it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.44it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5390 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9215 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=4f12963311374c7886cfe5e8410994cd, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9215
-[unscrew_bottle_cap_frame_0044] 9/64 | hit (embedding:vision) | latency=0.220s | elapsed=4.3s | eta=26.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 102.48it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.04it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.03it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5141 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9490 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=ec1b045060f543f5b630745793a88aff, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9490
-[unscrew_bottle_cap_frame_0046] 10/64 | hit (embedding:vision) | latency=0.192s | elapsed=4.8s | eta=25.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.10it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.04it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.03it/s]
-[DEBUG] inject: No block_groups for request_id=83e5ae2079454a9093558c41127ad5e5, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0001] 11/64 | hit (text:exact) | latency=0.514s | elapsed=5.5s | eta=26.6s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.86it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.74it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.73it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5442 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9264 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=81eac4997ed840aa84961b98d8e1c8f0, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9264
-[unscrew_bottle_cap_frame_0022] 12/64 | hit (embedding:vision) | latency=0.192s | elapsed=6.0s | eta=26.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.88it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.94it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.93it/s]
-[DEBUG] inject: No block_groups for request_id=53a41fc9667d449dbc7fdff3e33759f0, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0002] 13/64 | hit (text:exact) | latency=0.545s | elapsed=6.8s | eta=26.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 119.50it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.30it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5395 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8883 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=afca34241b0f4995b59c8389705d1906, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8883
-[unscrew_bottle_cap_frame_0017] 14/64 | hit (embedding:vision) | latency=0.251s | elapsed=7.2s | eta=25.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.03it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.29it/s]
-[DEBUG] inject: No block_groups for request_id=7432317dc65948efb3b57c763ccc4266, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0009] 15/64 | hit (text:exact) | latency=0.547s | elapsed=7.9s | eta=25.7s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.36it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.66it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5447 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9080 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=67bcdd9f645b4635bb9fba4da99d3869, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9080
-[unscrew_bottle_cap_frame_0023] 16/64 | hit (embedding:vision) | latency=0.253s | elapsed=8.3s | eta=24.8s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 118.73it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.17it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.7754 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9791 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=78de60236d0b45aca42f716cd8177e3c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9791
-[unscrew_bottle_cap_frame_0012] 17/64 | hit (embedding:vision) | latency=0.271s | elapsed=8.7s | eta=24.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.51it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.79it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5413 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9384 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=3f3e4da387f44558bf04da0e0942f8a2, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9384
-[unscrew_bottle_cap_frame_0055] 18/64 | hit (embedding:vision) | latency=0.191s | elapsed=9.1s | eta=23.2s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 139.32it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.87it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.86it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5410 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9374 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=8b02427c0de34ad093b314bc868c34df, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9374
-[unscrew_bottle_cap_frame_0054] 19/64 | hit (embedding:vision) | latency=0.254s | elapsed=9.6s | eta=22.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.02it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.35it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5435 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9139 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=c1cd1dc6a3004a5ab5040f65abc48743, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9139
-[unscrew_bottle_cap_frame_0043] 20/64 | hit (embedding:vision) | latency=0.252s | elapsed=10.0s | eta=21.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.65it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.83it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5680 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9054 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=4b828a1944224950b2a03fc5d88df4af, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9054
-INFO 12-11 06:18:21 [loggers.py:236] Engine 000: Avg prompt throughput: 48.4 tokens/s, Avg generation throughput: 17.6 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 39.2%, MM cache hit rate: 0.0%
-[unscrew_bottle_cap_frame_0025] 21/64 | hit (embedding:vision) | latency=0.256s | elapsed=10.4s | eta=21.2s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.02it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.27it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5425 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9345 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=a7be9111e3f44c4bb7da08485064f32a, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9345
-[unscrew_bottle_cap_frame_0030] 22/64 | hit (embedding:vision) | latency=0.251s | elapsed=10.8s | eta=20.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.32it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.91it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5430 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8838 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=cd5fcf7d74bd4bd580002b1610f721df, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8838
-[unscrew_bottle_cap_frame_0019] 23/64 | hit (embedding:vision) | latency=0.240s | elapsed=11.1s | eta=19.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 144.10it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.86it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.84it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5389 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8962 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=4c588c10c8aa4f8eb9448a3dfd4f1a44, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8962
-[unscrew_bottle_cap_frame_0034] 24/64 | hit (embedding:vision) | latency=0.255s | elapsed=11.6s | eta=19.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 109.77it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.64it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5502 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9002 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=aeba06015a0e4e8794eaf3bca6ee116c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9002
-[unscrew_bottle_cap_frame_0031] 25/64 | hit (embedding:vision) | latency=0.262s | elapsed=12.0s | eta=18.7s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.91it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.81it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5303 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8945 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=d0df50144c8144079db3311e52821fcb, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8945
-[unscrew_bottle_cap_frame_0029] 26/64 | hit (embedding:vision) | latency=0.255s | elapsed=12.4s | eta=18.1s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.78it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.43it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5538 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9282 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=65129e7cbbde43fcb093bfa56d6c310c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9282
-[unscrew_bottle_cap_frame_0050] 27/64 | hit (embedding:vision) | latency=0.253s | elapsed=12.8s | eta=17.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.88it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.76it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5323 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9118 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=d2e4c527b1e84578833e27206dff5a2c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9118
-[unscrew_bottle_cap_frame_0062] 28/64 | hit (embedding:vision) | latency=0.194s | elapsed=13.2s | eta=17.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.80it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.91it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5576 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9454 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=ccca3150fb9140bfbbad5235f4f4560c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9454
-[unscrew_bottle_cap_frame_0045] 29/64 | hit (embedding:vision) | latency=0.193s | elapsed=13.6s | eta=16.4s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.35it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.49it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.48it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5497 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9207 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=2897d22818d54974859196280d06bdac, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9207
-[unscrew_bottle_cap_frame_0041] 30/64 | hit (embedding:vision) | latency=0.255s | elapsed=14.1s | eta=15.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.57it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.27it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5448 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8887 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=7c517fd91dea4b62b1f25c740515bc9d, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8887
-[unscrew_bottle_cap_frame_0018] 31/64 | hit (embedding:vision) | latency=0.252s | elapsed=14.5s | eta=15.4s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.16it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.21it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5257 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9319 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=b5273ec5ab294ad5a0c955a198a9863f, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9319
-[unscrew_bottle_cap_frame_0049] 32/64 | hit (embedding:vision) | latency=0.253s | elapsed=14.9s | eta=14.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 129.29it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.76it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5438 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9177 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=6629f5dbcc284fa8a591cee4a15cf5e1, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9177
-[unscrew_bottle_cap_frame_0039] 33/64 | hit (embedding:vision) | latency=0.261s | elapsed=15.3s | eta=14.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 109.92it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.60it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5386 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9015 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=fc4567a36cfd489ab512807fac83ef90, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9015
-[unscrew_bottle_cap_frame_0060] 34/64 | hit (embedding:vision) | latency=0.254s | elapsed=15.7s | eta=13.8s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.16it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.74it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5306 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9106 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=37b204c7a45c423fb33c7ed9fe12d1d9, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9106
-[unscrew_bottle_cap_frame_0063] 35/64 | hit (embedding:vision) | latency=0.253s | elapsed=16.1s | eta=13.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 127.16it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.68it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5419 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9321 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=865e1482b26f4f968467f74918274027, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9321
-[unscrew_bottle_cap_frame_0040] 36/64 | hit (embedding:vision) | latency=0.254s | elapsed=16.5s | eta=12.8s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 130.70it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.85it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.7629 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9221 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=5a88e29c77c948aa8280eab3d19ee15f, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9221
-[unscrew_bottle_cap_frame_0015] 37/64 | hit (embedding:vision) | latency=0.291s | elapsed=16.9s | eta=12.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.57it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.28it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.27it/s]
-[DEBUG] inject: No block_groups for request_id=f072531a46884578867c3dc76b5d8a14, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0008] 38/64 | hit (text:exact) | latency=0.488s | elapsed=17.6s | eta=12.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 114.64it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.52it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.51it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5348 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9182 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=646dc8f8d67c4588b596f1160d3c238a, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9182
-[unscrew_bottle_cap_frame_0037] 39/64 | hit (embedding:vision) | latency=0.257s | elapsed=18.1s | eta=11.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 118.86it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.66it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5299 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9256 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=98c8dcf0087f49f5ac442b3aa51af6b1, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9256
-[unscrew_bottle_cap_frame_0052] 40/64 | hit (embedding:vision) | latency=0.264s | elapsed=18.5s | eta=11.1s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.51it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.14it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5257 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9352 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=fda677c2edb843639963e7237625ed27, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9352
-[unscrew_bottle_cap_frame_0047] 41/64 | hit (embedding:vision) | latency=0.253s | elapsed=18.9s | eta=10.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.07it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.14it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5465 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9332 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=2000038c594a4583bcc8ee99024b6c7e, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9332
-[unscrew_bottle_cap_frame_0036] 42/64 | hit (embedding:vision) | latency=0.194s | elapsed=19.3s | eta=10.1s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 67.20it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.40it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5525 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9387 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=8700cf7cf2c74630a85c6bd7f41e023f, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9387
-[unscrew_bottle_cap_frame_0048] 43/64 | hit (embedding:vision) | latency=0.262s | elapsed=19.8s | eta=9.7s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 96.47it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.32it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.7628 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9073 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=8e403dc32a1d47fd9539436d9a69d4a9, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9073
-[unscrew_bottle_cap_frame_0016] 44/64 | hit (embedding:vision) | latency=0.212s | elapsed=20.2s | eta=9.2s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 117.38it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.21it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.20it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5339 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9023 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=e8fb6656f57d42ceaa5c8cf6957b7580, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9023
-INFO 12-11 06:18:31 [loggers.py:236] Engine 000: Avg prompt throughput: 92.5 tokens/s, Avg generation throughput: 27.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.1%, MM cache hit rate: 0.0%
-[unscrew_bottle_cap_frame_0058] 45/64 | hit (embedding:vision) | latency=0.239s | elapsed=20.6s | eta=8.7s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.95it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.50it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.48it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5367 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9007 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=5abab2eb9ab1435282a4951bbb18cfbe, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9007
-[unscrew_bottle_cap_frame_0027] 46/64 | hit (embedding:vision) | latency=0.193s | elapsed=21.1s | eta=8.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.27it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.16it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.16it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5390 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8884 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=6d95d8eaab404d108f6d788d95fb203e, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8884
-[unscrew_bottle_cap_frame_0028] 47/64 | hit (embedding:vision) | latency=0.193s | elapsed=21.5s | eta=7.8s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 152.51it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.45it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
-[DEBUG] inject: No block_groups for request_id=2e31cd6b93f246bba6b8654b7d3ecfa8, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0006] 48/64 | hit (text:exact) | latency=0.487s | elapsed=22.2s | eta=7.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 138.27it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.29it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.28it/s]
-[DEBUG] inject: No block_groups for request_id=9f14b74f7c80491aaba02caa3c1a1a85, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0003] 49/64 | hit (text:exact) | latency=0.551s | elapsed=23.0s | eta=7.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.12it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.11it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.7666 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8927 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=ce02c1c76d3144188563ae183f2ade45, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8927
-[unscrew_bottle_cap_frame_0014] 50/64 | hit (embedding:vision) | latency=0.269s | elapsed=23.4s | eta=6.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 134.63it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.40it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5514 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9203 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=feacf5dd71fe4cc8a17b6834a1d7edf6, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9203
-[unscrew_bottle_cap_frame_0033] 51/64 | hit (embedding:vision) | latency=0.192s | elapsed=23.8s | eta=6.1s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.92it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.45it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5429 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9056 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=b4fc669876924fb7ac2d68e180349279, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9056
-[unscrew_bottle_cap_frame_0059] 52/64 | hit (embedding:vision) | latency=0.240s | elapsed=24.2s | eta=5.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 146.29it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.73it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.72it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5467 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8922 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=75b9ecf9d4054a7fbeef67c46eb49904, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8922
-[unscrew_bottle_cap_frame_0038] 53/64 | hit (embedding:vision) | latency=0.254s | elapsed=24.7s | eta=5.1s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.65it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.82it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5536 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9105 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=147e5d15a2764e6796e2b7105d06faad, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9105
-[unscrew_bottle_cap_frame_0024] 54/64 | hit (embedding:vision) | latency=0.192s | elapsed=25.1s | eta=4.6s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.31it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.88it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.87it/s]
-[DEBUG] inject: No block_groups for request_id=9e3fc4cfecc845d5bb0082fbd3fb75ea, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0007] 55/64 | hit (text:exact) | latency=0.542s | elapsed=25.9s | eta=4.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.40it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.36it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5412 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9025 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=920914bbbf384bcbbcfe8994316ba5e4, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9025
-[unscrew_bottle_cap_frame_0035] 56/64 | hit (embedding:vision) | latency=0.251s | elapsed=26.3s | eta=3.8s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.03it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.96it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5473 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9263 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=eca86fc112f34c748328c000ff30b95f, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9263
-[unscrew_bottle_cap_frame_0053] 57/64 | hit (embedding:vision) | latency=0.258s | elapsed=26.7s | eta=3.3s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.61it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.33it/s]
-[DEBUG] inject: No block_groups for request_id=645898909d1c47f7aa8d5ef317e800b9, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0005] 58/64 | hit (text:exact) | latency=0.545s | elapsed=27.4s | eta=2.8s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 125.26it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.90it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.89it/s]
-[DEBUG] inject: No block_groups for request_id=f3766e4cdc2d4babaf2d726db20ed6e1, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0004] 59/64 | hit (text:exact) | latency=0.549s | elapsed=28.1s | eta=2.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.69it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.82it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5462 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9130 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=48715df70a584930a63c9240278a6fbc, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9130
-[unscrew_bottle_cap_frame_0064] 60/64 | hit (embedding:vision) | latency=0.261s | elapsed=28.5s | eta=1.9s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 138.96it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.32it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5547 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.8864 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=14ebb8df03a74ac8979004976f54ca6c, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.8864
-[unscrew_bottle_cap_frame_0026] 61/64 | hit (embedding:vision) | latency=0.253s | elapsed=28.9s | eta=1.4s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 138.58it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.31it/s]
-[DEBUG] inject: No block_groups for request_id=1c8a429df01849fa87baa42e32bb82c6, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0010] 62/64 | hit (text:exact) | latency=0.543s | elapsed=29.6s | eta=1.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 133.73it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.56it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.54it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5365 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9152 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=038a9bb452f748e88fb54f6c84bb6222, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9152
-[unscrew_bottle_cap_frame_0061] 63/64 | hit (embedding:vision) | latency=0.191s | elapsed=30.0s | eta=0.5s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 141.06it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.96it/s]
-[DEBUG] exact_text: MISS for normalized='is the cap on the bottle?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: score=0.5431 (threshold=0.8200)
-[DEBUG] embedding:vision: score=0.9007 (threshold=0.8500)
-[DEBUG] inject: No block_groups for request_id=9b1f4699f2c74f0da79e9713d69b844b, chunk_id=5966d66b907f48b9ae45b110ad681132, needed_blocks=5
-[DEBUG] embedding_cache: HIT (match found, injection failed) for layer=vision, score=0.9007
-[unscrew_bottle_cap_frame_0042] 64/64 | hit (embedding:vision) | latency=0.191s | elapsed=30.4s | eta=0.0s | answer match=True | embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-
-=== Experiment summary ===
-Total prompts: 64
-Cache hits: 63 (98.4%)
-Cache misses: 1 (1.6%)
-Average latency: 0.291s
-Average latency (hit): 0.284s
-Average latency (miss): 0.735s
-Answer match rate: 82.8% (n=64)
-Hit rate by cache:
-  - embedding:vision: 53 hits (82.8% of prompts) | avg latency=0.237s
-  - text:exact: 10 hits (15.6% of prompts) | avg latency=0.531s
-Technique breakdown:
-  - embedding:prompt: hit=0, miss=54, skip=10
-  - embedding:vision: hit=53, miss=1, skip=10
-  - exact_text: hit=10, miss=54, skip=0
-  - kv_cache: hit=0, miss=64, skip=0
-  - semantic_text: hit=0, miss=54, skip=10
-Detailed results saved to experiment2/experiment_logs/20251211-061841-video_frames-question-Qwen-Qwen3-VL-4B-Instruct.csv
-
-=== vLLM prefix/KV cache metrics ===
-- vllm:kv_cache_usage_perc [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0.0
-- vllm:prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 2490
-- vllm:prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 1008
-- vllm:external_prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
-- vllm:external_prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-4B-Instruct]: 0
-
-=== Sample outputs ===
-ID=unscrew_bottle_cap_frame_0011 | img=output_0011 | miss (none) | latency=0.735s
-Techniques: embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: What is in this frame?
-Model: A man in a white shirt and black pants is standing in front of a white wall, holding a black object in his right hand.
-Reference: A bottle and a laptop on a table.
----
-ID=unscrew_bottle_cap_frame_0021 | img=output_0021 | hit (embedding:vision) | latency=0.192s
-Techniques: embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: Is the cap on the bottle?
-Model: No, the cap is not on the bottle.
-Reference: The cap is on the bottle.
----
-ID=unscrew_bottle_cap_frame_0013 | img=output_0013 | hit (embedding:vision) | latency=0.230s
-Techniques: embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: Is a hand visible in this frame?
-Model: No, there is no hand visible in this frame.
-Reference: There is a hand in the frame.
----
-ID=unscrew_bottle_cap_frame_0032 | img=output_0032 | hit (embedding:vision) | latency=0.252s
-Techniques: embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: Is the cap on the bottle?
-Model: No, the cap is not on the bottle.
-Reference: The cap is on the bottle.
----
-ID=unscrew_bottle_cap_frame_0051 | img=output_0051 | hit (embedding:vision) | latency=0.261s
-Techniques: embedding:prompt=miss, embedding:vision=hit, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: Is the cap on the bottle?
-Model: No, the cap is not on the bottle.
-Reference: The cap is not on the bottle.
----
-[rank0]:[W1211 06:18:42.760734193 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

@@ -22,19 +22,19 @@ echo "=========================================="
 echo ""
 echo "Conda env: 585"
 echo "Image root: $GQA_IMAGE_ROOT"
-echo "Dataset: video_frames_dataset.json"
+echo "Dataset: video_frames_labels.json"
 echo "Log directory: $LOG_DIR"
 echo ""
 
 # Common arguments for all runs
 COMMON_ARGS=(
   --dataset video_frames
-  --video-frames-data video_frames_dataset.json
+  --video-frames-data video_frames_labels.json
   --max-samples 64
   --chunk-source question
   --trust-remote-code
   --gpu-memory-utilization 0.9
-  --summary-log video_frames_results.csv
+  --summary-log experiment2_frames_nokv_results.csv
 )
 
 # Threshold configurations
@@ -186,7 +186,7 @@ echo "RESULTS AND LOG FILES LOCATION"
 echo "=========================================="
 echo ""
 echo "📊 RESULTS FILE (CSV with all experiment results):"
-echo "   $(pwd)/video_frames_results.csv"
+echo "   $(pwd)/experiment2_frames_nokv_results.csv"
 echo ""
 echo "📁 LOG DIRECTORY (Individual logs for each experiment):"
 echo "   $(pwd)/$LOG_DIR/"
@@ -220,7 +220,7 @@ echo "  3. aggressive:   vision=0.80, prompt=0.78, semantic=0.78"
 echo ""
 echo "=========================================="
 echo "To view results:"
-echo "  cat video_frames_results.csv"
+echo "  cat experiment2_frames_nokv_results.csv"
 echo ""
 echo "To view a specific log:"
 echo "  cat $LOG_DIR/<experiment_name>.log"

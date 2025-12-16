@@ -1,582 +1,0 @@
-[2025-12-11 06:13:51] INFO loader.py:120: Loading faiss with AVX512 support.
-[2025-12-11 06:13:51] INFO loader.py:122: Successfully loaded faiss with AVX512 support.
-[info] cache_dir resolved to /workspace/experiment2/kv_chunks
-[info] fusion_cache_dir resolved to /workspace/experiment2/fusion_chunks
-Loaded 64 prompts from Video Frames (video_frames_dataset.json).
-Chunk-key uniqueness: 3 unique keys / 64 prompts (100.0% reused >=2x)
-Most frequent chunk keys:
-- occurrences=48: Is the cap on the bottle?
-- occurrences=11: What is in this frame?
-- occurrences=5: Is a hand visible in this frame?
-INFO 12-11 06:13:51 [utils.py:253] non-default args: {'trust_remote_code': True, 'seed': None, 'max_model_len': 8192, 'model': 'Qwen/Qwen3-VL-2B-Instruct'}
-The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
-WARNING 12-11 06:13:51 [arg_utils.py:1175] `seed=None` is equivalent to `seed=0` in V1 Engine. You will no longer be allowed to pass `None` in v0.13.
-WARNING 12-11 06:13:51 [arg_utils.py:1183] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
-INFO 12-11 06:13:52 [model.py:637] Resolved architecture: Qwen3VLForConditionalGeneration
-INFO 12-11 06:13:52 [model.py:1750] Using max model len 8192
-INFO 12-11 06:13:52 [scheduler.py:228] Chunked prefill is enabled with max_num_batched_tokens=8192.
-INFO 12-11 06:13:55 [core.py:93] Initializing a V1 LLM engine (v0.12.0) with config: model='Qwen/Qwen3-VL-2B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen3-VL-2B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01), seed=0, served_model_name=Qwen/Qwen3-VL-2B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'level': None, 'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::kda_attention', 'vllm::sparse_attn_indexer'], 'compile_mm_encoder': False, 'compile_sizes': [], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'eliminate_noops': True, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>}, 'local_cache_dir': None}
-INFO 12-11 06:13:55 [parallel_state.py:1200] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.16.96.2:40063 backend=nccl
-INFO 12-11 06:13:55 [parallel_state.py:1408] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0
-INFO 12-11 06:14:03 [gpu_model_runner.py:3467] Starting to load model Qwen/Qwen3-VL-2B-Instruct...
-INFO 12-11 06:14:04 [cuda.py:411] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION']
-INFO 12-11 06:14:05 [weight_utils.py:527] No model.safetensors.index.json found in remote.
-Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
-Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.21it/s]
-Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.21it/s]
-
-INFO 12-11 06:14:06 [default_loader.py:308] Loading weights took 0.97 seconds
-INFO 12-11 06:14:06 [gpu_model_runner.py:3549] Model loading took 4.3077 GiB memory and 1.891144 seconds
-INFO 12-11 06:14:07 [gpu_model_runner.py:4306] Encoder cache will be initialized with a budget of 151250 tokens, and profiled with 1 video items of the maximum feature size.
-INFO 12-11 06:14:19 [backends.py:655] Using cache directory: /root/.cache/vllm/torch_compile_cache/52c96d1be8/rank_0_0/backbone for vLLM's torch.compile
-INFO 12-11 06:14:19 [backends.py:715] Dynamo bytecode transform time: 6.19 s
-INFO 12-11 06:14:22 [backends.py:216] Directly load the compiled graph(s) for dynamic shape from the cache, took 3.067 s
-INFO 12-11 06:14:23 [monitor.py:34] torch.compile takes 9.26 s in total
-INFO 12-11 06:14:24 [gpu_worker.py:359] Available KV cache memory: 31.51 GiB
-INFO 12-11 06:14:25 [kv_cache_utils.py:1286] GPU KV cache size: 294,992 tokens
-INFO 12-11 06:14:25 [kv_cache_utils.py:1291] Maximum concurrency for 8,192 tokens per request: 36.01x
-Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 3/51 [00:00<00:02, 23.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:01, 23.25it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  18%|█▊        | 9/51 [00:00<00:01, 23.99it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:00<00:01, 25.16it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▉       | 15/51 [00:00<00:01, 25.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  35%|███▌      | 18/51 [00:00<00:01, 26.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  41%|████      | 21/51 [00:00<00:01, 26.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  47%|████▋     | 24/51 [00:00<00:01, 25.48it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  53%|█████▎    | 27/51 [00:01<00:00, 25.29it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  59%|█████▉    | 30/51 [00:01<00:00, 25.21it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  65%|██████▍   | 33/51 [00:01<00:00, 25.09it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████   | 36/51 [00:01<00:00, 25.25it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  76%|███████▋  | 39/51 [00:01<00:00, 25.04it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  82%|████████▏ | 42/51 [00:01<00:00, 24.96it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  88%|████████▊ | 45/51 [00:01<00:00, 24.99it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 48/51 [00:01<00:00, 25.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:02<00:00, 23.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:02<00:00, 24.89it/s]
-Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   9%|▊         | 3/35 [00:00<00:01, 23.50it/s]Capturing CUDA graphs (decode, FULL):  17%|█▋        | 6/35 [00:00<00:01, 26.28it/s]Capturing CUDA graphs (decode, FULL):  26%|██▌       | 9/35 [00:00<00:00, 27.14it/s]Capturing CUDA graphs (decode, FULL):  34%|███▍      | 12/35 [00:00<00:00, 27.63it/s]Capturing CUDA graphs (decode, FULL):  43%|████▎     | 15/35 [00:00<00:00, 28.02it/s]Capturing CUDA graphs (decode, FULL):  51%|█████▏    | 18/35 [00:00<00:00, 28.35it/s]Capturing CUDA graphs (decode, FULL):  60%|██████    | 21/35 [00:00<00:00, 28.35it/s]Capturing CUDA graphs (decode, FULL):  69%|██████▊   | 24/35 [00:00<00:00, 28.31it/s]Capturing CUDA graphs (decode, FULL):  77%|███████▋  | 27/35 [00:00<00:00, 28.37it/s]Capturing CUDA graphs (decode, FULL):  89%|████████▊ | 31/35 [00:01<00:00, 29.93it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 30.78it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:01<00:00, 28.83it/s]
-INFO 12-11 06:14:29 [gpu_model_runner.py:4466] Graph capturing finished in 4 secs, took 0.53 GiB
-INFO 12-11 06:14:29 [core.py:254] init engine (profile, create kv cache, warmup model) took 22.29 seconds
-INFO 12-11 06:14:30 [llm.py:343] Supported tasks: ('generate',)
-[2025-12-11 06:14:30] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
-[DEBUG] SemanticCache.__init__: cache_dir=/workspace/experiment2/kv_chunks, exact_cache enabled=True
-[DEBUG] ExactTextCache created: index_path=/workspace/experiment2/kv_chunks/text_index.json, existing_entries=2
-[2025-12-11 06:14:32] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
-[2025-12-11 06:14:35] INFO SentenceTransformer.py:227: Load pretrained SentenceTransformer: clip-ViT-B-32
-Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 71.81it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.75it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.73it/s]
-[DEBUG] inject: No block_groups for request_id=67633d08f56b4ca98b54721c7bcdf5c4, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0011] 1/64 | hit (text:exact) | latency=0.536s | elapsed=0.7s | eta=44.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes. The person appears to be looking directly at the camera. The eyes are large and have a noticeable reflection of light,
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-[DEBUG] chunk_text='What is in this frame?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 144.01it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.90it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.88it/s]
-[DEBUG] inject: No block_groups for request_id=a724b23cb828416d94417690094b19ee, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0021] 2/64 | hit (text:exact) | latency=0.277s | elapsed=1.1s | eta=35.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is on the bottle.
----
-[DEBUG] chunk_text='Is the cap on the bottle?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 33.77it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 14.35it/s]
-[DEBUG] exact_text: MISS for normalized='is a hand visible in this frame?...' (candidates: 0)
-[DEBUG] embedding_cache: checking embeddings for layers: ['prompt', 'vision']
-[DEBUG] embedding:prompt: empty cache (0 entries)
-[DEBUG] embedding:vision: empty cache (0 entries)
-[DEBUG] semantic_text_cache: empty cache (0 entries)
-[DEBUG] semantic_text: no match found for chunk_text='Is a hand visible in this frame?...'
-[DEBUG] add_observation: Capturing chunk_id=427146916c1f4d548894a2243a587488 for chunk_text='Is a hand visible in this frame?...'
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.76it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.75it/s]
-[DEBUG] _record_chunk: Added to semantic_text_cache, chunk_id=427146916c1f4d548894a2243a587488, chunk_text='Is a hand visible in this frame?...', cache_size=1
-[DEBUG] ExactTextCache.record: Saved chunk_id=427146916c1f4d548894a2243a587488 for normalized='is a hand visible in this frame?...', total_entries_for_this_text=1, total_normalized_texts=3
-[DEBUG] _record_chunk: Added to exact_cache, chunk_id=427146916c1f4d548894a2243a587488, normalized='is a hand visible in this frame?...', total_candidates_for_this_text=1
-[DEBUG] add_observation: Added embeddings to embedding_cache for chunk_id=427146916c1f4d548894a2243a587488, layers=['prompt', 'vision']
-[unscrew_bottle_cap_frame_0013] 3/64 | miss (none) | latency=0.278s | elapsed=1.6s | eta=33.1s | answer match=True | embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
-[DEBUG] Q: Is a hand visible in this frame?
-[DEBUG] Model: No, a hand is not visible in this frame.
-[DEBUG] Reference: There is a hand in the frame.
----
-[DEBUG] chunk_text='Is a hand visible in this frame?...' | embeddings=['prompt', 'vision']
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 49.79it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
-[DEBUG] inject: No block_groups for request_id=b76404f8859f409ab73a0db7a693dd98, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0032] 4/64 | hit (text:exact) | latency=0.354s | elapsed=2.2s | eta=33.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 147.43it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.13it/s]
-[DEBUG] inject: No block_groups for request_id=21ba099d401c45319423bed18fde62c4, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0051] 5/64 | hit (text:exact) | latency=0.387s | elapsed=2.7s | eta=32.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.96it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.53it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.53it/s]
-[DEBUG] inject: No block_groups for request_id=21ad242b36ec43fb99e28c51bec86094, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0056] 6/64 | hit (text:exact) | latency=0.307s | elapsed=3.3s | eta=31.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 131.63it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.03it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.02it/s]
-[DEBUG] inject: No block_groups for request_id=4994379b6f034f6a9d0848724736cc58, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0020] 7/64 | hit (text:exact) | latency=0.393s | elapsed=3.9s | eta=31.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 110.93it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.98it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.96it/s]
-[DEBUG] inject: No block_groups for request_id=ca55e18b9b9a4b1bb03ac6169f4b048e, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0057] 8/64 | hit (text:exact) | latency=0.281s | elapsed=4.4s | eta=31.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 60.32it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.32it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.31it/s]
-[DEBUG] inject: No block_groups for request_id=03e8a8c7565c474da42c293468f2d0d9, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0044] 9/64 | hit (text:exact) | latency=0.281s | elapsed=4.9s | eta=30.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 144.90it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.51it/s]
-[DEBUG] inject: No block_groups for request_id=1f3560830e854c559e5a02f6d56eb1d3, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0046] 10/64 | hit (text:exact) | latency=0.305s | elapsed=5.5s | eta=29.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.27it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.60it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.59it/s]
-[DEBUG] inject: No block_groups for request_id=0792964332864c778a036505513e4519, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0001] 11/64 | hit (text:exact) | latency=0.608s | elapsed=6.3s | eta=30.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera. The image is a still shot, and the lighting is brigh
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 97.27it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.89it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.88it/s]
-[DEBUG] inject: No block_groups for request_id=aa254e99a7da4b8197ac2217c04b6f3d, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0022] 12/64 | hit (text:exact) | latency=0.363s | elapsed=6.8s | eta=29.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.35it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.50it/s]
-[DEBUG] inject: No block_groups for request_id=ed88107f8eca4ffa939c15a58b29a2e9, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0002] 13/64 | hit (text:exact) | latency=0.522s | elapsed=7.6s | eta=29.7s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes. The person appears to be looking directly at the camera. The eyes are large and have a noticeable reflection of light,
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 153.13it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.47it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.46it/s]
-[DEBUG] inject: No block_groups for request_id=f98ff61140ca4691a8fc9e7a7d6f254a, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0017] 14/64 | hit (text:exact) | latency=0.307s | elapsed=8.2s | eta=29.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 92.99it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.37it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.36it/s]
-[DEBUG] inject: No block_groups for request_id=723949e3241f48fd84ccd2682e24c99a, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0009] 15/64 | hit (text:exact) | latency=0.531s | elapsed=8.9s | eta=29.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 54.08it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.03it/s]
-[DEBUG] inject: No block_groups for request_id=c6076d3e458046f3a1b5927ecaabec6d, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0023] 16/64 | hit (text:exact) | latency=0.289s | elapsed=9.4s | eta=28.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 145.49it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.62it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.61it/s]
-[DEBUG] inject: No block_groups for request_id=1574b1c5b7fe47219a3ba873f05d1883, chunk_id=427146916c1f4d548894a2243a587488, needed_blocks=4
-[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0012] 17/64 | hit (text:exact) | latency=0.101s | elapsed=9.7s | eta=26.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.28it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.54it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.53it/s]
-[DEBUG] inject: No block_groups for request_id=ed7821b8fb1c4a20a7a1bfe4f30e78fb, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-INFO 12-11 06:14:46 [loggers.py:236] Engine 000: Avg prompt throughput: 42.2 tokens/s, Avg generation throughput: 42.2 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 38.9%, MM cache hit rate: 0.0%
-[unscrew_bottle_cap_frame_0055] 18/64 | hit (text:exact) | latency=0.344s | elapsed=10.2s | eta=26.1s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 124.47it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.02it/s]
-[DEBUG] inject: No block_groups for request_id=f2c406c686f04e80a47d7816f4c16933, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0054] 19/64 | hit (text:exact) | latency=0.375s | elapsed=10.7s | eta=25.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.29it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.72it/s]
-[DEBUG] inject: No block_groups for request_id=37a5d7c0a0fb46b6a1e969752b1c4a0d, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0043] 20/64 | hit (text:exact) | latency=0.282s | elapsed=11.2s | eta=24.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 124.80it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.90it/s]
-[DEBUG] inject: No block_groups for request_id=995b42a5d2c54a4b85e32260aedd0986, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0025] 21/64 | hit (text:exact) | latency=0.307s | elapsed=11.8s | eta=24.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.34it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.43it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.42it/s]
-[DEBUG] inject: No block_groups for request_id=cdc98e03718e4740b6e27b3d4e75739a, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0030] 22/64 | hit (text:exact) | latency=0.285s | elapsed=12.3s | eta=23.5s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 144.22it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.79it/s]
-[DEBUG] inject: No block_groups for request_id=59ec5ea47c5f452c8c9042fd79344456, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0019] 23/64 | hit (text:exact) | latency=0.306s | elapsed=12.9s | eta=22.9s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 128.99it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.71it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.71it/s]
-[DEBUG] inject: No block_groups for request_id=7cdbe5fa7908456f8cbf45e7f5bef70c, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0034] 24/64 | hit (text:exact) | latency=0.282s | elapsed=13.4s | eta=22.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 93.66it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.84it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.83it/s]
-[DEBUG] inject: No block_groups for request_id=d87e96cf03ed4d8181a2d2009f734b01, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0031] 25/64 | hit (text:exact) | latency=0.364s | elapsed=14.0s | eta=21.9s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 106.68it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.90it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.90it/s]
-[DEBUG] inject: No block_groups for request_id=3afa4ffb61054d4398f75cf2a5db6170, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0029] 26/64 | hit (text:exact) | latency=0.282s | elapsed=14.5s | eta=21.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.81it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.73it/s]
-[DEBUG] inject: No block_groups for request_id=18603a6dab424cfe9478713ca41a0951, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0050] 27/64 | hit (text:exact) | latency=0.306s | elapsed=15.1s | eta=20.6s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 142.68it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.45it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.44it/s]
-[DEBUG] inject: No block_groups for request_id=91c9574c1ad34d59ac912aab370f1088, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0062] 28/64 | hit (text:exact) | latency=0.283s | elapsed=15.6s | eta=20.1s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 136.99it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.44it/s]
-[DEBUG] inject: No block_groups for request_id=3f6865dce6d148fc9764512a36aa5e01, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0045] 29/64 | hit (text:exact) | latency=0.387s | elapsed=16.1s | eta=19.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.32it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.14it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.14it/s]
-[DEBUG] inject: No block_groups for request_id=7bce6259fac24e759193ab77e25e30bd, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0041] 30/64 | hit (text:exact) | latency=0.306s | elapsed=16.8s | eta=19.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 116.70it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.91it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.90it/s]
-[DEBUG] inject: No block_groups for request_id=a9eb8a7bc71e4f4280ea96af83200dcb, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0018] 31/64 | hit (text:exact) | latency=0.282s | elapsed=17.2s | eta=18.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 124.00it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.13it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.12it/s]
-[DEBUG] inject: No block_groups for request_id=1219e7f2cdaa463abd1674f9b25bc80b, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0049] 32/64 | hit (text:exact) | latency=0.369s | elapsed=17.8s | eta=17.8s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 126.57it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.94it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  5.93it/s]
-[DEBUG] inject: No block_groups for request_id=56dfda9824374135a89811c86860c203, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0039] 33/64 | hit (text:exact) | latency=0.280s | elapsed=18.3s | eta=17.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 142.67it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.14it/s]
-[DEBUG] inject: No block_groups for request_id=86155b755f14438ea25786ad851fb358, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0060] 34/64 | hit (text:exact) | latency=0.280s | elapsed=18.8s | eta=16.6s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 129.55it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.70it/s]
-[DEBUG] inject: No block_groups for request_id=330957aa29b94d188753f13a4cf6834d, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0063] 35/64 | hit (text:exact) | latency=0.306s | elapsed=19.4s | eta=16.0s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 118.60it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.82it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.81it/s]
-[DEBUG] inject: No block_groups for request_id=36b8885b47494527b1f45bdf8229b840, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0040] 36/64 | hit (text:exact) | latency=0.282s | elapsed=19.8s | eta=15.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 143.96it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.27it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.26it/s]
-[DEBUG] inject: No block_groups for request_id=efda8d8402494ee69512dfcb2fa75ed2, chunk_id=427146916c1f4d548894a2243a587488, needed_blocks=4
-[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0015] 37/64 | hit (text:exact) | latency=0.101s | elapsed=20.2s | eta=14.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 124.93it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.76it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.76it/s]
-[DEBUG] inject: No block_groups for request_id=3a99e18ce17140aa8185fc4fde13101e, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-INFO 12-11 06:14:57 [loggers.py:236] Engine 000: Avg prompt throughput: 76.5 tokens/s, Avg generation throughput: 63.9 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.0%, MM cache hit rate: 0.0%
-[unscrew_bottle_cap_frame_0008] 38/64 | hit (text:exact) | latency=0.560s | elapsed=20.9s | eta=14.3s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, with a focus on the eyes and nose. The person is wearing a dark-colored shirt, and the background is blurred, suggesting a shallow depth of field. The li
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 138.67it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.72it/s]
-[DEBUG] inject: No block_groups for request_id=0e6b182362f54f5f8c6d88591ca5c4cb, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0037] 39/64 | hit (text:exact) | latency=0.280s | elapsed=21.4s | eta=13.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.70it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.04it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.03it/s]
-[DEBUG] inject: No block_groups for request_id=e0c685edbdee4a399687aca386c420a3, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0052] 40/64 | hit (text:exact) | latency=0.280s | elapsed=21.9s | eta=13.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 131.40it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.23it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.22it/s]
-[DEBUG] inject: No block_groups for request_id=e3962c9790614a9f80702c554a24c84c, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0047] 41/64 | hit (text:exact) | latency=0.281s | elapsed=22.4s | eta=12.6s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 134.30it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.57it/s]
-[DEBUG] inject: No block_groups for request_id=d40b0c2b6a474b88aa013ca8438e6913, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0036] 42/64 | hit (text:exact) | latency=0.353s | elapsed=22.9s | eta=12.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.36it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.25it/s]
-[DEBUG] inject: No block_groups for request_id=8a24363474f4447aae915abb40669fba, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0048] 43/64 | hit (text:exact) | latency=0.281s | elapsed=23.3s | eta=11.4s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 137.37it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.10it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.09it/s]
-[DEBUG] inject: No block_groups for request_id=5fe15c4e14cb46fabd5d798a2ad3d48f, chunk_id=427146916c1f4d548894a2243a587488, needed_blocks=4
-[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0016] 44/64 | hit (text:exact) | latency=0.102s | elapsed=23.7s | eta=10.8s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 132.80it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.20it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  4.20it/s]
-[DEBUG] inject: No block_groups for request_id=b301da69aa1042d784ed3b577cabb555, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0058] 45/64 | hit (text:exact) | latency=0.281s | elapsed=24.2s | eta=10.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.48it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.40it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.39it/s]
-[DEBUG] inject: No block_groups for request_id=a7d38f6fd5884209b39eea47b6589a31, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0027] 46/64 | hit (text:exact) | latency=0.281s | elapsed=24.7s | eta=9.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 118.29it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.39it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.38it/s]
-[DEBUG] inject: No block_groups for request_id=50777b6a0e3b4c3d8f520b1449352131, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0028] 47/64 | hit (text:exact) | latency=0.330s | elapsed=25.3s | eta=9.2s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 133.79it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.34it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  9.32it/s]
-[DEBUG] inject: No block_groups for request_id=10cca72a0da54089b72dd6e89c408392, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0006] 48/64 | hit (text:exact) | latency=0.526s | elapsed=26.0s | eta=8.7s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 123.29it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.50it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.48it/s]
-[DEBUG] inject: No block_groups for request_id=ea907989bd0448599a9ebd6bdcc69029, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0003] 49/64 | hit (text:exact) | latency=0.595s | elapsed=26.8s | eta=8.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.85it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.77it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.76it/s]
-[DEBUG] inject: No block_groups for request_id=6c2cce64581243f69ea02e189bb392a5, chunk_id=427146916c1f4d548894a2243a587488, needed_blocks=4
-[DEBUG] exact_text: HIT for normalized='is a hand visible in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0014] 50/64 | hit (text:exact) | latency=0.102s | elapsed=27.2s | eta=7.6s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 122.40it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.63it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  6.62it/s]
-[DEBUG] inject: No block_groups for request_id=9d9c2b1a85d346c9a08a4fbd4fcbcfb9, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0033] 51/64 | hit (text:exact) | latency=0.306s | elapsed=27.7s | eta=7.1s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 116.15it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.40it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.39it/s]
-[DEBUG] inject: No block_groups for request_id=953c6dfdcb044a5a9277333e5fa9d39e, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0059] 52/64 | hit (text:exact) | latency=0.378s | elapsed=28.2s | eta=6.5s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 107.27it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.42it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.41it/s]
-[DEBUG] inject: No block_groups for request_id=dea84cf6602749a29d70ffe24c844a8d, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0038] 53/64 | hit (text:exact) | latency=0.280s | elapsed=28.7s | eta=6.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 143.28it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 13.99it/s]
-[DEBUG] inject: No block_groups for request_id=d07397960a8b4ccb949a768868707d9a, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0024] 54/64 | hit (text:exact) | latency=0.281s | elapsed=29.2s | eta=5.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.94it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 12.17it/s]
-[DEBUG] inject: No block_groups for request_id=0ceeb85491604bf486a6140f58a38d92, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0007] 55/64 | hit (text:exact) | latency=0.601s | elapsed=30.0s | eta=4.9s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 129.06it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.17it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.16it/s]
-[DEBUG] inject: No block_groups for request_id=08c2b57c69244c37b55ff3e68b8e4576, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-INFO 12-11 06:15:07 [loggers.py:236] Engine 000: Avg prompt throughput: 70.1 tokens/s, Avg generation throughput: 71.2 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 40.3%, MM cache hit rate: 0.0%
-[unscrew_bottle_cap_frame_0035] 56/64 | hit (text:exact) | latency=0.351s | elapsed=30.5s | eta=4.4s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 108.64it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.05it/s]
-[DEBUG] inject: No block_groups for request_id=3dfec57681d249fdbb3263ba535c1762, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0053] 57/64 | hit (text:exact) | latency=0.355s | elapsed=31.0s | eta=3.8s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 129.92it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.96it/s]
-[DEBUG] inject: No block_groups for request_id=2bfa7abdea6d48dd86a8687d5cf9cb8a, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0005] 58/64 | hit (text:exact) | latency=0.527s | elapsed=31.8s | eta=3.3s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 121.72it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.61it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.60it/s]
-[DEBUG] inject: No block_groups for request_id=8488cbcc7eed4c9f848b8e662d68cefa, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0004] 59/64 | hit (text:exact) | latency=0.601s | elapsed=32.6s | eta=2.8s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 147.79it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.56it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.55it/s]
-[DEBUG] inject: No block_groups for request_id=0487201fb2534fe6ab65d94055fe275a, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0064] 60/64 | hit (text:exact) | latency=0.345s | elapsed=33.1s | eta=2.2s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 135.50it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 10.54it/s]
-[DEBUG] inject: No block_groups for request_id=72395c3e5ade4447a3885f9732e6feb1, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0026] 61/64 | hit (text:exact) | latency=0.319s | elapsed=33.6s | eta=1.7s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 139.66it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.60it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  7.59it/s]
-[DEBUG] inject: No block_groups for request_id=8f70c08832194beb926fca4533e28eb0, chunk_id=3fe7e558c3134f2ebc2bb1ef323149a4, needed_blocks=7
-[DEBUG] exact_text: HIT for normalized='what is in this frame?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0010] 62/64 | hit (text:exact) | latency=0.529s | elapsed=34.4s | eta=1.1s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: What is in this frame?
-[DEBUG] Model: The frame shows a close-up of a person's face, specifically focusing on the eyes and nose. The person appears to be looking directly at the camera with a neutral expression. The lighting is bright, an
-[DEBUG] Reference: A bottle and a laptop on a table.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 106.57it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.06it/s]Batches: 100%|██████████| 1/1 [00:00<00:00,  8.05it/s]
-[DEBUG] inject: No block_groups for request_id=f40f8820c005439386f217af1ae072ea, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0061] 63/64 | hit (text:exact) | latency=0.341s | elapsed=34.9s | eta=0.6s | answer match=False | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-[DEBUG] Q: Is the cap on the bottle?
-[DEBUG] Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-[DEBUG] Reference: The cap is not on the bottle.
----
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 138.22it/s]
-Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|██████████| 1/1 [00:00<00:00, 11.91it/s]
-[DEBUG] inject: No block_groups for request_id=b760aa88ddc248049691a0c6ee37010b, chunk_id=85230f0326d24591b880f3d002d746a5, needed_blocks=5
-[DEBUG] exact_text: HIT for normalized='is the cap on the bottle?...' (candidates: 1)
-[unscrew_bottle_cap_frame_0042] 64/64 | hit (text:exact) | latency=0.361s | elapsed=35.4s | eta=0.0s | answer match=True | embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-
-=== Experiment summary ===
-Total prompts: 64
-Cache hits: 63 (98.4%)
-Cache misses: 1 (1.6%)
-Average latency: 0.343s
-Average latency (hit): 0.344s
-Average latency (miss): 0.278s
-Answer match rate: 50.0% (n=64)
-Hit rate by cache:
-  - text:exact: 63 hits (98.4% of prompts) | avg latency=0.344s
-Technique breakdown:
-  - embedding:prompt: hit=0, miss=1, skip=63
-  - embedding:vision: hit=0, miss=1, skip=63
-  - exact_text: hit=63, miss=1, skip=0
-  - kv_cache: hit=0, miss=64, skip=0
-  - semantic_text: hit=0, miss=1, skip=63
-Detailed results saved to experiment2/experiment_logs/20251211-061512-video_frames-question-Qwen-Qwen3-VL-2B-Instruct.csv
-
-=== vLLM prefix/KV cache metrics ===
-- vllm:kv_cache_usage_perc [engine=0, model_name=Qwen/Qwen3-VL-2B-Instruct]: 0.0
-- vllm:prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-2B-Instruct]: 2490
-- vllm:prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-2B-Instruct]: 1008
-- vllm:external_prefix_cache_queries [engine=0, model_name=Qwen/Qwen3-VL-2B-Instruct]: 0
-- vllm:external_prefix_cache_hits [engine=0, model_name=Qwen/Qwen3-VL-2B-Instruct]: 0
-
-=== Sample outputs ===
-ID=unscrew_bottle_cap_frame_0011 | img=output_0011 | hit (text:exact) | latency=0.536s
-Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Q: What is in this frame?
-Model: The frame shows a close-up of a person's face, specifically focusing on the eyes. The person appears to be looking directly at the camera. The eyes are large and have a noticeable reflection of light, suggesting a well-lit environment. The skin around the eyes is smooth and appears to be in good condition. The
-Reference: A bottle and a laptop on a table.
----
-ID=unscrew_bottle_cap_frame_0021 | img=output_0021 | hit (text:exact) | latency=0.277s
-Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Q: Is the cap on the bottle?
-Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-Reference: The cap is on the bottle.
----
-ID=unscrew_bottle_cap_frame_0013 | img=output_0013 | miss (none) | latency=0.278s
-Techniques: embedding:prompt=miss, embedding:vision=miss, exact_text=miss, kv_cache=miss, semantic_text=miss
-Q: Is a hand visible in this frame?
-Model: No, a hand is not visible in this frame.
-Reference: There is a hand in the frame.
----
-ID=unscrew_bottle_cap_frame_0032 | img=output_0032 | hit (text:exact) | latency=0.354s
-Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Q: Is the cap on the bottle?
-Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened. Therefore, the answer is yes.
-Reference: The cap is on the bottle.
----
-ID=unscrew_bottle_cap_frame_0051 | img=output_0051 | hit (text:exact) | latency=0.387s
-Techniques: embedding:prompt=skip, embedding:vision=skip, exact_text=hit, kv_cache=miss, semantic_text=skip
-Q: Is the cap on the bottle?
-Model: Based on the image provided, the bottle has a cap on it. The cap is visible and appears to be securely fastened to the bottle. Therefore, the answer is yes.
-Reference: The cap is not on the bottle.
----
-[rank0]:[W1211 06:15:12.070822765 ProcessGroupNCCL.cpp:1524] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

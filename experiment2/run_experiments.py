@@ -100,10 +100,25 @@ def aggregate_results(results: Sequence[PromptResult]) -> dict[str, Any]:
         source = result.hit.source if result.hit else "unknown"
         breakdown[source] = breakdown.get(source, 0) + 1
 
+    # Calculate separate hit rates for each cache type
+    text_exact_hits = sum(1 for result in results if result.techniques.get("exact_text") == "hit")
+    text_semantic_hits = sum(1 for result in results if result.techniques.get("semantic_text") == "hit")
+    embedding_prompt_hits = sum(1 for result in results if result.techniques.get("embedding:prompt") == "hit")
+    embedding_vision_hits = sum(1 for result in results if result.techniques.get("embedding:vision") == "hit")
+    
+    text_exact_hit_rate = (text_exact_hits / total) if total else 0.0
+    text_semantic_hit_rate = (text_semantic_hits / total) if total else 0.0
+    embedding_prompt_hit_rate = (embedding_prompt_hits / total) if total else 0.0
+    embedding_vision_hit_rate = (embedding_vision_hits / total) if total else 0.0
+
     return {
         "total_prompts": total,
         "cache_hits": len(hits),
         "cache_hit_rate": (len(hits) / total) if total else 0.0,
+        "text_exact_hit_rate": text_exact_hit_rate,
+        "text_semantic_hit_rate": text_semantic_hit_rate,
+        "embedding_prompt_hit_rate": embedding_prompt_hit_rate,
+        "embedding_vision_hit_rate": embedding_vision_hit_rate,
         "avg_latency": _mean(latencies),
         "avg_latency_hit": _mean([result.latency for result in hits]),
         "avg_latency_miss": _mean([result.latency for result in misses]),
@@ -348,6 +363,10 @@ def main() -> None:
                 "total_prompts": aggregates["total_prompts"],
                 "cache_hits": aggregates["cache_hits"],
                 "cache_hit_rate": aggregates["cache_hit_rate"],
+                "text_exact_hit_rate": aggregates.get("text_exact_hit_rate", 0.0),
+                "text_semantic_hit_rate": aggregates.get("text_semantic_hit_rate", 0.0),
+                "embedding_prompt_hit_rate": aggregates.get("embedding_prompt_hit_rate", 0.0),
+                "embedding_vision_hit_rate": aggregates.get("embedding_vision_hit_rate", 0.0),
                 "avg_latency": aggregates["avg_latency"],
                 "avg_latency_hit": aggregates["avg_latency_hit"],
                 "avg_latency_miss": aggregates["avg_latency_miss"],
