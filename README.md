@@ -2,8 +2,8 @@
 
 This project contains two experiments for evaluating semantic caching strategies in vision models:
 
-- **Experiment 1**: ViT-based image classification with hierarchical caching (L0.5 exact, L1 semantic, L2 embedding)
-- **Experiment 2**: Vision-language model inference with KV cache injection on video frames
+- **Experiment 1**: ViT-based image classification (only L2 embedding)
+- **Experiment 2**: VLM scene understanding (using all cache layers)
 
 ## Prerequisites
 
